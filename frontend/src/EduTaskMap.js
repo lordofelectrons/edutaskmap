@@ -10,6 +10,7 @@ import { Card,
   ListItemText,
   Button,
   Divider, } from '@mui/material';
+import fetchSchools from './schools.js';
 
 const grades = [
   { grade: '5 клас', color: '#fb923c' },
@@ -34,10 +35,7 @@ export default function EduTaskMap() {
   const [schools, setSchools] = useState([])
 
   useEffect(() => {
-    fetch('http://localhost:3001/schools')
-      .then(res => res.json())
-      .then(data => setSchools(data))
-      .catch(err => console.error('Failed to fetch schools:', err));
+    fetchSchools(reponse => setSchools(reponse))
   }, [drawerOpen]);
 
   const toggleDrawer = (open) => () => {
@@ -50,30 +48,9 @@ export default function EduTaskMap() {
   };
   return (
     <Box sx={{ p: 6, backgroundColor: '#f1e3d4', minHeight: '100vh' }}>
-      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-        <Box sx={{ width: 250 }} role="presentation">
-          <List>
-            {schools.map((school, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton onClick={() => handleSchoolSelect(school)}>
-                  <ListItemText primary={school} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Divider />
-          <Box sx={{ p: 2 }}>
-            <Button variant="outlined" fullWidth onClick={() => alert('Додати новий заклад')}>Додати новий</Button>
-          </Box>
-        </Box>
-      </Drawer>
+      
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 8 }}>
-        <Button sx={{ backgroundColor: '#facc15', color: 'black', fontWeight: 'bold', fontSize: '1.25rem' }} onClick={toggleDrawer(true)}>
-          Заклад освіти
-        </Button>
-        <Typography variant="body2">{selectedSchool}</Typography>
-      </Box>
+      
 
       <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
         КЛАСТЕР ГРОМАДЯНСЬКИХ КОМПЕТЕНТНОСТЕЙ
