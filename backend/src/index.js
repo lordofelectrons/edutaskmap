@@ -9,12 +9,11 @@ const port = 3001;
 app.use(cors());
 app.use(json());
 
-// PostgreSQL pool setup — adjust credentials as needed
 const pool = new Pool({
-  user: 'your_username',
+  user: 'admin',
   host: 'localhost',
-  database: 'your_database',
-  password: 'your_password',
+  database: 'edutaskmap',
+  password: 'admin',
   port: 5432,
 });
 
