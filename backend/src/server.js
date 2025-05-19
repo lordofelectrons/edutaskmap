@@ -1,13 +1,13 @@
 import express from 'express';
 import { Pool } from 'pg';
 import cors from 'cors';
-import { json } from 'body-parser';
+import bodyParser from 'body-parser';
 
 const app = express();
 const port = 3001;
 
 app.use(cors());
-app.use(json());
+app.use(bodyParser.json());
 
 const pool = new Pool({
   user: 'admin',
