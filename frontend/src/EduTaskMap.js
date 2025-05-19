@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import { Card,
   CardContent,
   Typography,
@@ -28,11 +28,17 @@ const competencies = [
   { id: 4, title: 'Компетентність', color: '#fb923c' },
 ];
 
-const schools = ['Тестова Філія', 'Школа №1', 'Ліцей "Надія"'];
-
 export default function EduTaskMap() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedSchool, setSelectedSchool] = useState('Тестова Філія');
+  const [selectedSchool, setSelectedSchool] = useState(null);
+  const [schools, setSchools] = useState([])
+
+  useEffect(() => {
+    fetch('http://localhost:3001/schools')
+      .then(res => res.json())
+      .then(data => setSchools(data))
+      .catch(err => console.error('Failed to fetch schools:', err));
+  }, [drawerOpen]);
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
