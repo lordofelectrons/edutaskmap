@@ -10,7 +10,8 @@ import { Card,
   ListItemText,
   Button,
   Divider, } from '@mui/material';
-import fetchSchools from './schools.js';
+import { fetchSchools } from './requests/schools.js';
+import SchoolSelection from './components/SchoolSelection.js';
 
 const grades = [
   { grade: '5 клас', color: '#fb923c' },
@@ -30,27 +31,20 @@ const competencies = [
 ];
 
 export default function EduTaskMap() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState(null);
-  const [schools, setSchools] = useState([])
+  const [schools, setSchools] = useState([]);
 
   useEffect(() => {
-    fetchSchools(reponse => setSchools(reponse))
-  }, [drawerOpen]);
+    async function loadSchools() {
+      const response = await fetchSchools();
+      setSchools(response);
+    }
+    loadSchools();
+  }, []);
 
-  const toggleDrawer = (open) => () => {
-    setDrawerOpen(open);
-  };
-
-  const handleSchoolSelect = (school) => {
-    setSelectedSchool(school);
-    setDrawerOpen(false);
-  };
   return (
     <Box sx={{ p: 6, backgroundColor: '#f1e3d4', minHeight: '100vh' }}>
-      
-
-      
+      <SchoolSelection schools={schools} selectedSchool={selectedSchool} setSelectedSchool={setSelectedSchool}/>
 
       <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
         КЛАСТЕР ГРОМАДЯНСЬКИХ КОМПЕТЕНТНОСТЕЙ

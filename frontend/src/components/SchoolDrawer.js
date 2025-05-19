@@ -7,13 +7,13 @@ import { Box,
   Button,
   Divider, } from '@mui/material';
 
-export default function SchoolDrawer (schools, drawerOpen, setDrawerOpen, setSelectedSchool) {
-    return <Drawer anchor="left" open={drawerOpen} onClose={setDrawerOpen(false)}>
+export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect }) {
+    return <Drawer anchor="left" open={drawerOpen} onClose={() => handleSchoolSelect(false)}>
         <Box sx={{ width: 250 }} role="presentation">
           <List>
             {schools.map((school, index) => (
               <ListItem key={index} disablePadding>
-                <ListItemButton onClick={() => setSelectedSchool(school)}>
+                <ListItemButton onClick={() => handleSchoolSelect(school)}>
                   <ListItemText primary={school} />
                 </ListItemButton>
               </ListItem>
