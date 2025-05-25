@@ -23,10 +23,10 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect 
     <Drawer anchor="left" open={drawerOpen} onClose={() => handleSchoolSelect(false)}>
       <Box sx={{ width: 250 }} role="presentation">
         <List>
-          {schools.map((school, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton onClick={() => handleSchoolSelect(school)}>
-                <ListItemText primary={school}/>
+          {schools.map(school => (
+            <ListItem key={school?.id} disablePadding>
+              <ListItemButton onClick={() => handleSchoolSelect(school?.name)}>
+                <ListItemText primary={school?.name}/>
               </ListItemButton>
             </ListItem>
           ))}

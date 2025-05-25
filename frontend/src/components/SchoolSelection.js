@@ -24,7 +24,7 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
             <Button sx={{ backgroundColor: '#facc15', color: 'black', fontWeight: 'bold', fontSize: '1.25rem' }} onClick={handleSchoolSelectionOpening}>
             Заклад освіти
             </Button>
-            <Typography variant="body2">{selectedSchool}</Typography>
+            <Typography variant="body2">{selectedSchool?.name}</Typography>
         </Box>
     </>
 }

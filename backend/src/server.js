@@ -45,7 +45,7 @@ pool.query(`
 `);
 
 // GET all schools
-app.get('/schools', async (req, res) => {
+app.get('/api/schools', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM schools ORDER BY id');
     res.json(result.rows);
@@ -56,7 +56,7 @@ app.get('/schools', async (req, res) => {
 });
 
 // POST a new school
-app.post('/schools', async (req, res) => {
+app.post('/api/schools', async (req, res) => {
   const { name } = req.body;
   if (!name) {
     return res.status(400).json({ error: 'School name is required' });
@@ -75,7 +75,7 @@ app.post('/schools', async (req, res) => {
 });
 
 // GET all competencies
-app.get('/competencies', async (req, res) => {
+app.get('/api/competencies', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM competencies ORDER BY id');
     res.json(result.rows);
@@ -86,7 +86,7 @@ app.get('/competencies', async (req, res) => {
 });
 
 // POST a new competency
-app.post('/competencies', async (req, res) => {
+app.post('/api/competencies', async (req, res) => {
   const { name, school_id } = req.body;
   if (!name || !school_id) {
     return res.status(400).json({ error: 'Name and school_id are required' });
@@ -105,7 +105,7 @@ app.post('/competencies', async (req, res) => {
 });
 
 // GET classes by school name and grade
-app.get('/classes/by-school-and-grade', async (req, res) => {
+app.get('/api/classes/by-school-and-grade', async (req, res) => {
   const { school_name, grade } = req.query;
   if (!school_name || !grade) {
     return res.status(400).json({ error: 'school_name and grade are required' });
@@ -126,7 +126,7 @@ app.get('/classes/by-school-and-grade', async (req, res) => {
 });
 
 // POST a new class
-app.post('/classes', async (req, res) => {
+app.post('/api/classes', async (req, res) => {
   const { grade, name, school_id } = req.body;
   if (!grade || !name || !school_id) {
     return res.status(400).json({ error: 'Grade, name, and school_id are required' });
