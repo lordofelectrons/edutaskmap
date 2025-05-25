@@ -16,18 +16,19 @@ import { fetchCompetencies, addCompetency } from './requests/competencies.js'
 import SchoolSelection from './components/SchoolSelection.js'
 import CompetencyCard from './components/CompetencyCard.js'
 import AddCompetencyDialog from './dialog/AddCompetencyDialog.js'
+import GradeClasses from './components/GradeClasses'
 
 const grades = [
-  { grade: '5 клас', color: '#fb923c' },
-  { grade: '6 клас', color: '#facc15' },
-  { grade: '7 клас', color: '#f472b6' },
-  { grade: '8 клас', color: '#fb923c' },
-  { grade: '9 клас', color: '#facc15' },
-  { grade: '10 клас', color: '#f472b6' },
-  { grade: '11 клас', color: '#fb923c' },
-]
+  { grade: 5, color: '#fb923c' },
+  { grade: 6, color: '#facc15' },
+  { grade: 7, color: '#f472b6' },
+  { grade: 8, color: '#fb923c' },
+  { grade: 9, color: '#facc15' },
+  { grade: 10, color: '#f472b6' },
+  { grade: 11, color: '#fb923c' },
+];
 
-const colorPalette = ['#fb923c', '#f472b6', '#facc15']
+const colorPalette = ['#fb923c', '#f472b6', '#facc15'];
 
 export default function EduTaskMap () {
   const [selectedSchool, setSelectedSchool] = useState(null)
@@ -88,17 +89,13 @@ export default function EduTaskMap () {
 
       {/* Grades implementation remains unchanged */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, textAlign: 'center' }}>
-        {grades.map((grade, idx) => (
-          <Box key={idx}>
-            <Box sx={{ backgroundColor: grade.color, color: '#fff', fontWeight: 'bold', py: 1 }}>{grade.grade}</Box>
-            <Card sx={{ mt: 1 }}>
-              <Box sx={{ backgroundColor: '#facc15', px: 2, py: 0.5, fontWeight: 'bold' }}>ПРЕДМЕТ</Box>
-              <CardContent>
-                <Typography fontWeight="bold">ВПРАВА</Typography>
-                <a href="#" style={{ color: '#1d4ed8', textDecoration: 'underline' }}>Лінк на вправу</a>
-              </CardContent>
-            </Card>
-          </Box>
+        {grades.map((gradeObj, idx) => (
+          <GradeClasses
+            key={gradeObj.grade}
+            grade={gradeObj.grade}
+            color={gradeObj.color}
+            school={selectedSchool}
+          />
         ))}
       </Box>
 

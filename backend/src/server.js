@@ -104,10 +104,20 @@ app.post('/competencies', async (req, res) => {
   }
 });
 
-// GET all classes
-app.get('/classes', async (req, res) => {
+// GET classes by school name and grade
+app.get('/classes/by-school-and-grade', async (req, res) => {
+  const { school_name, grade } = req.query;
+  if (!school_name || !grade) {
+    return res.status(400).json({ error: 'school_name and grade are required' });
+  }
   try {
-    const result = await pool.query('SELECT * FROM classes ORDER BY id');
+    const result = await pool.query(
+      `SELECT classes.* FROM classes
+       JOIN schools ON classes.school_id = schools.id
+       WHERE schools.name = $1 AND classes.grade = $2
+       ORDER BY classes.id`,
+      [school_name, grade]
+    );
     res.json(result.rows);
   } catch (err) {
     console.error(err);
