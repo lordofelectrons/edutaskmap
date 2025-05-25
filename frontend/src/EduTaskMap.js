@@ -35,11 +35,12 @@ export default function EduTaskMap() {
   const [schools, setSchools] = useState([]);
 
   useEffect(() => {
-    async function loadSchools() {
-      const response = await fetchSchools();
-      setSchools(response);
-    }
-    loadSchools();
+    fetchSchools((data) => {
+      setSchools(data);
+      if (data.length > 0) {
+        setSelectedSchool(data[0]); // Set the first school as selected by default
+      }
+    });
   }, []);
 
   return (
