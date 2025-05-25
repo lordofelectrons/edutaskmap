@@ -2,14 +2,7 @@ import { React, useState, useEffect } from 'react'
 import {
   Typography,
   Box,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Card,
-  CardContent
+  Button
 } from '@mui/material'
 import { fetchSchools } from './requests/schools.js'
 import { fetchCompetencies, addCompetency } from './requests/competencies.js'
