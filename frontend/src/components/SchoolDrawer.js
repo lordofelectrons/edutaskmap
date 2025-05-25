@@ -25,7 +25,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect 
         <List>
           {schools.map(school => (
             <ListItem key={school?.id} disablePadding>
-              <ListItemButton onClick={() => handleSchoolSelect(school?.name)}>
+              <ListItemButton onClick={() => handleSchoolSelect(school)}>
                 <ListItemText primary={school?.name}/>
               </ListItemButton>
             </ListItem>
