@@ -34,6 +34,16 @@ pool.query(`
   )
 `);
 
+// Create classes table if not exists
+pool.query(`
+  CREATE TABLE IF NOT EXISTS classes (
+    id SERIAL PRIMARY KEY,
+    grade INTEGER NOT NULL CHECK (grade >= 5 AND grade <= 11),
+    name TEXT NOT NULL,
+    school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
+  )
+`);
+
 // GET all schools
 app.get('/schools', async (req, res) => {
   try {
@@ -86,6 +96,39 @@ app.post('/competencies', async (req, res) => {
     const result = await pool.query(
       'INSERT INTO competencies (name, school_id) VALUES ($1, $2) RETURNING *',
       [name, school_id]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// GET all classes
+app.get('/classes', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM classes ORDER BY id');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// POST a new class
+app.post('/classes', async (req, res) => {
+  const { grade, name, school_id } = req.body;
+  if (!grade || !name || !school_id) {
+    return res.status(400).json({ error: 'Grade, name, and school_id are required' });
+  }
+  if (grade < 5 || grade > 11) {
+    return res.status(400).json({ error: 'Grade must be between 5 and 11' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO classes (grade, name, school_id) VALUES ($1, $2, $3) RETURNING *',
+      [grade, name, school_id]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
