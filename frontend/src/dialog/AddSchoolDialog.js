@@ -9,7 +9,7 @@ export default function AddSchoolDialog({ open, onClose, onSchoolAdded }) {
     if (!schoolName.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/schools', {
+      const res = await fetch('/schools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: schoolName }),

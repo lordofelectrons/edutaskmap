@@ -1,11 +1,11 @@
 export async function fetchCompetencies(cb) {
-  const res = await fetch('/api/competencies');
+  const res = await fetch('/competencies');
   const data = await res.json();
   cb(data);
 }
 
 export async function addCompetency({ name, school_id }, cb) {
-  const res = await fetch('/api/competencies', {
+  const res = await fetch('/competencies', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, school_id }),
