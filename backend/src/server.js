@@ -83,10 +83,16 @@ app.post('/api/schools', async (req, res) => {
   }
 });
 
-// GET all competencies
+// GET competencies by school_id
 app.get('/api/competencies', async (req, res) => {
+  const { school_id } = req.query;
   try {
-    const result = await pool.query('SELECT * FROM competencies ORDER BY id');
+    const result = await pool.query(
+      `SELECT * FROM competencies
+      ${school_id ? 'WHERE competencies.school_id = $1' : ''}
+      ORDER BY id`,
+      school_id ? [school_id] : []
+    );
     res.json(result.rows);
   } catch (err) {
     console.error(err);

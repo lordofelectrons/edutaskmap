@@ -5,7 +5,7 @@ import {
   Button
 } from '@mui/material'
 import { fetchSchools } from './requests/schools.js'
-import { fetchCompetencies, addCompetency } from './requests/competencies.js'
+import { fetchCompetenciesBySchoolId, addCompetency } from './requests/competencies.js'
 import SchoolSelection from './components/SchoolSelection.js'
 import CompetencyCard from './components/CompetencyCard.js'
 import AddCompetencyDialog from './dialog/AddCompetencyDialog.js'
@@ -42,13 +42,13 @@ export default function EduTaskMap () {
   }, [])
 
   useEffect(() => {
-    fetchCompetencies((data) => {
+    fetchCompetenciesBySchoolId(selectedSchool?.id, (data) => {
       setCompetencies(data.map((c, i) => ({
         ...c,
         color: colorPalette[i % colorPalette.length]
       })))
     })
-  }, [])
+  }, [selectedSchool])
 
   const handleAddCompetency = () => {
     if (!newCompetencyName.trim() || !selectedSchool) return
