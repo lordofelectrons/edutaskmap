@@ -37,13 +37,6 @@ export default function EduTaskMap () {
     })
   }
 
-  const setSelectedSchoolByName = (name) => {
-    const school = schools?.find(school => school.name = name)
-    if (school) {
-      setSelectedSchool(school)
-    }
-  }
-
   useEffect(() => {
     syncSchoolList();
   }, [])
@@ -71,7 +64,7 @@ export default function EduTaskMap () {
 
   return (
     <Box sx={{ p: 6, backgroundColor: '#f1e3d4', minHeight: '100vh' }}>
-      <SchoolSelection schools={schools} selectedSchool={selectedSchool} setSelectedSchool={setSelectedSchoolByName} syncSchoolList={syncSchoolList}/>
+      <SchoolSelection schools={schools} selectedSchool={selectedSchool} setSelectedSchool={setSelectedSchool} syncSchoolList={syncSchoolList}/>
 
       <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
         КЛАСТЕР ГРОМАДЯНСЬКИХ КОМПЕТЕНТНОСТЕЙ

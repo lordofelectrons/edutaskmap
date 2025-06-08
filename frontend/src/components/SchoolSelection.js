@@ -10,7 +10,7 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
 
     const handleSchoolSelect = (school) => {
         if (school) {
-            setSelectedSchool(school?.name ? school.name : school);
+            setSelectedSchool(school);
         }
         setDrawerOpen(false);
     };

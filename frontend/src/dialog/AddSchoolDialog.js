@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import { addSchool } from '../requests/schools'
 
 export default function AddSchoolDialog({ open, onClose, onSchoolAdded }) {
   const [schoolName, setSchoolName] = useState('');
@@ -9,18 +10,11 @@ export default function AddSchoolDialog({ open, onClose, onSchoolAdded }) {
     if (!schoolName.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/schools', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: schoolName }),
-      });
-      if (res.ok) {
-        onSchoolAdded(schoolName);
+      addSchool({ name: schoolName }, (data) => {
+        onSchoolAdded(data);
         setSchoolName('');
         onClose();
-      } else {
-        // handle error as needed
-      }
+      });
     } finally {
       setLoading(false);
     }
