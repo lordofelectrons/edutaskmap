@@ -40,7 +40,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect 
     <AddSchoolDialog
       open={dialogOpen}
       onClose={() => setDialogOpen(false)}
-      onSchoolAdded={handleSchoolAddition} // Implement the logic to refresh the school list after adding a new school
+      onSchoolAdded={handleSchoolAddition}
     />
   </>
 }

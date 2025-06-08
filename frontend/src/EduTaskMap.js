@@ -33,8 +33,15 @@ export default function EduTaskMap () {
   const syncSchoolList = () => {
     fetchSchools((data) => {
       setSchools(data)
-      if (data.length > 0) setSelectedSchool(data[0])
+      if (data.length > 0 && !selectedSchool) setSelectedSchool(data[0])
     })
+  }
+
+  const setSelectedSchoolByName = (name) => {
+    const school = schools?.find(school => school.name = name)
+    if (school) {
+      setSelectedSchool(school)
+    }
   }
 
   useEffect(() => {
@@ -64,7 +71,7 @@ export default function EduTaskMap () {
 
   return (
     <Box sx={{ p: 6, backgroundColor: '#f1e3d4', minHeight: '100vh' }}>
-      <SchoolSelection schools={schools} selectedSchool={selectedSchool} setSelectedSchool={setSelectedSchool} syncSchoolList={syncSchoolList}/>
+      <SchoolSelection schools={schools} selectedSchool={selectedSchool} setSelectedSchool={setSelectedSchoolByName} syncSchoolList={syncSchoolList}/>
 
       <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
         КЛАСТЕР ГРОМАДЯНСЬКИХ КОМПЕТЕНТНОСТЕЙ

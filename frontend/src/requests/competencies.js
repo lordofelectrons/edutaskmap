@@ -5,7 +5,7 @@ export async function fetchCompetencies(cb) {
 }
 
 export async function fetchCompetenciesBySchoolId(school_id, cb) {
-  const res = await fetch(`/api/competencies?school_id=${school_id}`);
+  const res = await fetch(`/api/competencies${school_id ? `?school_id=${school_id}` : ''}`);
   const data = await res.json();
   cb(data);
 }
