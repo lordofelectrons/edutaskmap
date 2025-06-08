@@ -20,7 +20,7 @@ const TaskList = ({ classId }) => {
   }, [classId]);
 
   if (loading) return <p>Loading tasks…</p>
-  if (error) return <p>Error loading tasks</p>
+  if (error) return <p>Завдання не знайдені!</p>
   if (!tasks.length) return <p>No tasks available</p>
 
   return (

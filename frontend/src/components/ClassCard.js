@@ -1,6 +1,6 @@
 // frontend/src/components/ClassCard.js
 import { Card, CardContent, Typography, Box } from '@mui/material';
-import React, { useEffect, useState } from 'react'
+import TaskList from './TaskList';
 
 export default function ClassCard({ classItem }) {
   return (
