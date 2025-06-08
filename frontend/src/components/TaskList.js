@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { fetchTasks } from '../requests/tasks'
+import AddTaskDialog from '../dialog/AddTaskDialog';
 
 const TaskList = ({ classId }) => {
   const [tasks, setTasks] = useState([])
@@ -22,24 +23,23 @@ const TaskList = ({ classId }) => {
   }, [classId]);
 
   const handleTaskAdded = () => {
-    fetchTasks()
+    fetchTasks(classId, setTasks)
     setShowAddForm(false)
   }
 
-  if (loading) return <p>Loading tasks…</p>
-  if (error) return <p>Завдання не знайдені!</p>
-  if (!tasks.length) return <p>No tasks available</p>
-
   return (
     <div>
-      <ul className="task-list">
-        {tasks.map(task => (
-          <li key={task.id}>{task.title}</li>
-        ))}
-      </ul>
+      {loading ? (<p>Loading tasks…</p>) : 
+        error ? <p>Завдання не знайдені!</p> :
+          (<ul className="task-list">
+            {tasks?.map(task => (
+              <li key={task.id}>{task.description}</li>
+            ))}
+          </ul>)
+      }
       {showAddForm ? (
         <>
-          <AddTaskForm classId={classId} onTaskAdded={handleTaskAdded} />
+          <AddTaskDialog classId={classId} onTaskAdded={handleTaskAdded} />
           <button
             className="cancel-button"
             onClick={() => setShowAddForm(false)}

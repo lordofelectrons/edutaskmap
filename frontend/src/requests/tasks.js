@@ -4,12 +4,12 @@ export async function fetchTasks(classId, cb) {
   cb(data);
 }
 
-export async function addTask({ text, classId }, cb) {
+export async function addTask({ description, classId }, cb) {
   const res = await fetch(`/api/classes/${classId}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ description }),
   });
   const data = await res.json();
-  cb(data);
+  cb();
 }
