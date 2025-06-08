@@ -1,5 +1,6 @@
 // frontend/src/components/ClassCard.js
 import { Card, CardContent, Typography, Box } from '@mui/material';
+import React, { useEffect, useState } from 'react'
 
 export default function ClassCard({ classItem }) {
   return (
@@ -7,7 +8,7 @@ export default function ClassCard({ classItem }) {
       <Box sx={{ backgroundColor: '#facc15', px: 2, py: 0.5, fontWeight: 'bold' }}>ПРЕДМЕТ</Box>
       <CardContent>
         <Typography fontWeight="bold">{classItem.name}</Typography>
-        {/* Add more fields if needed */}
+        <TaskList classId={classItem.id} />
       </CardContent>
     </Card>
   );

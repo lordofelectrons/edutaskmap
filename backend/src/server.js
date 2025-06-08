@@ -162,6 +162,30 @@ app.post('/api/classes', async (req, res) => {
   }
 });
 
+// Fetch tasks by class_id
+app.get('/api/classes/:classId/tasks', async (req, res) => {
+  const { classId } = req.params;
+  const tasks = await pool.query(
+    'SELECT * FROM tasks WHERE class_id = $1',
+    [classId]
+  );
+  if (tasks.length === 0) return res.status(404).json({ error: 'No tasks found for this class' });
+  res.json(tasks);
+});
+
+// Add a new task by class_id
+app.post('/api/classes/:classId/tasks', async (req, res) => {
+  const { classId } = req.params;
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'Text is required' });
+  const [result] = await pool.query(
+    'INSERT INTO tasks (text, class_id) VALUES ($1, $2)',
+    [text, classId]
+  );
+  if (!result) return res.status(500).json({ error: 'Failed to add task' });
+  res.status(201).json({ id: result.insertId, text, class_id: classId });
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
