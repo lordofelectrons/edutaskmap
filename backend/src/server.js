@@ -44,6 +44,15 @@ pool.query(`
   )
 `);
 
+// Create tasks table if not exists
+pool.query(`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
+    description TEXT NOT NULL
+  )
+`);
+
 // GET all schools
 app.get('/api/schools', async (req, res) => {
   try {
