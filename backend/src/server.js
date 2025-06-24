@@ -26,7 +26,7 @@ const pool = new Pool({
 
 // Create school table if not exists
 pool.query(`
-  CREATE TABLE IF NOT EXISTS edutaskmap.schools (
+  CREATE TABLE IF NOT EXISTS schools (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL
   )
@@ -34,28 +34,28 @@ pool.query(`
 
 // Create competency table if not exists
 pool.query(`
-  CREATE TABLE IF NOT EXISTS edutaskmap.competencies (
+  CREATE TABLE IF NOT EXISTS competencies (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    school_id INTEGER REFERENCES edutaskmap.schools(id) ON DELETE CASCADE
+    school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
   )
 `);
 
 // Create classes table if not exists
 pool.query(`
-  CREATE TABLE IF NOT EXISTS edutaskmap.classes (
+  CREATE TABLE IF NOT EXISTS classes (
     id SERIAL PRIMARY KEY,
     grade INTEGER NOT NULL CHECK (grade >= 5 AND grade <= 11),
     name TEXT NOT NULL,
-    school_id INTEGER REFERENCES edutaskmap.schools(id) ON DELETE CASCADE
+    school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
   )
 `);
 
 // Create tasks table if not exists
 pool.query(`
-  CREATE TABLE IF NOT EXISTS edutaskmap.tasks (
+  CREATE TABLE IF NOT EXISTS tasks (
     id SERIAL PRIMARY KEY,
-    class_id INTEGER REFERENCES edutaskmap.classes(id) ON DELETE CASCADE,
+    class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
     description TEXT NOT NULL
   )
 `);
@@ -63,7 +63,7 @@ pool.query(`
 // GET all schools
 app.get('/api/schools', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM edutaskmap.schools ORDER BY id');
+    const result = await pool.query('SELECT * FROM schools ORDER BY id');
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -80,7 +80,7 @@ app.post('/api/schools', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO edutaskmap.schools (name) VALUES ($1) RETURNING *',
+      'INSERT INTO schools (name) VALUES ($1) RETURNING *',
       [name]
     );
     res.status(201).json(result.rows[0]);
@@ -95,8 +95,8 @@ app.get('/api/competencies', async (req, res) => {
   const { school_id } = req.query;
   try {
     const result = await pool.query(
-      `SELECT * FROM edutaskmap.competencies
-      ${school_id ? 'WHERE edutaskmap.competencies.school_id = $1' : ''}
+      `SELECT * FROM competencies
+      ${school_id ? 'WHERE competencies.school_id = $1' : ''}
       ORDER BY id`,
       school_id ? [school_id] : []
     );
@@ -116,7 +116,7 @@ app.post('/api/competencies', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO edutaskmap.competencies (name, school_id) VALUES ($1, $2) RETURNING *',
+      'INSERT INTO competencies (name, school_id) VALUES ($1, $2) RETURNING *',
       [name, school_id]
     );
     res.status(201).json(result.rows[0]);
@@ -134,10 +134,10 @@ app.get('/api/classes/by-school-and-grade', async (req, res) => {
   }
   try {
     const result = await pool.query(
-      `SELECT edutaskmap.classes.* FROM edutaskmap.classes
-       JOIN edutaskmap.schools ON edutaskmap.classes.school_id = edutaskmap.schools.id
-       WHERE edutaskmap.schools.name = $1 AND edutaskmap.classes.grade = $2
-       ORDER BY edutaskmap.classes.id`,
+      `SELECT classes.* FROM classes
+       JOIN schools ON classes.school_id = schools.id
+       WHERE schools.name = $1 AND classes.grade = $2
+       ORDER BY classes.id`,
       [school_name, grade]
     );
     res.json(result.rows);
@@ -159,7 +159,7 @@ app.post('/api/classes', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO edutaskmap.classes (grade, name, school_id) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO classes (grade, name, school_id) VALUES ($1, $2, $3) RETURNING *',
       [grade, name, school_id]
     );
     res.status(201).json(result.rows[0]);
@@ -173,7 +173,7 @@ app.post('/api/classes', async (req, res) => {
 app.get('/api/classes/:classId/tasks', async (req, res) => {
   const { classId } = req.params;
   const tasks = await pool.query(
-    'SELECT * FROM edutaskmap.tasks WHERE class_id = $1',
+    'SELECT * FROM tasks WHERE class_id = $1',
     [classId]
   );
   if (tasks.length === 0) return res.status(404).json({ error: 'No tasks found for this class' });
@@ -186,7 +186,7 @@ app.post('/api/classes/:classId/tasks', async (req, res) => {
   const { description } = req.body;
   if (!description) return res.status(400).json({ error: 'Description is required' });
   const result = await pool.query(
-    'INSERT INTO edutaskmap.tasks (description, class_id) VALUES ($1, $2)',
+    'INSERT INTO tasks (description, class_id) VALUES ($1, $2)',
     [description, classId]
   );
   if (!result) return res.status(500).json({ error: 'Failed to add task' });
