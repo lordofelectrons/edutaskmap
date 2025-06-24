@@ -24,6 +24,8 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+experiment
+
 // Create school table if not exists
 pool.query(`
   CREATE TABLE IF NOT EXISTS edutaskmap.schools (
