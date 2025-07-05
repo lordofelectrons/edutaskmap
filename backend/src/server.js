@@ -21,12 +21,19 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'edutaskmap',
   password: process.env.DB_PASSWORD || 'admin',
   port: process.env.DB_PORT || 5432,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  // Connection pool settings to prevent timeouts
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
-  maxUses: 7500, // Close (and replace) a connection after it has been used 7500 times
+  // Neon-specific SSL configuration
+  ssl: process.env.NODE_ENV === 'production' ? {
+    rejectUnauthorized: false,
+    sslmode: 'require'
+  } : false,
+  // Connection pool settings optimized for serverless environments
+  max: 1, // Single connection for serverless (prevents connection pool issues)
+  idleTimeoutMillis: 10000, // Close idle clients after 10 seconds
+  connectionTimeoutMillis: 10000, // Increased timeout for Neon
+  maxUses: 1, // Use connection only once (important for serverless)
+  // Additional settings for Neon
+  keepAlive: false, // Disable keep-alive for serverless
+  allowExitOnIdle: true, // Allow pool to exit when idle
 });
 
 // Handle pool errors
@@ -47,6 +54,17 @@ const testConnection = async () => {
   console.log('- NODE_ENV:', process.env.NODE_ENV || 'development (default)');
   console.log('- PORT:', process.env.PORT || '3001 (default)');
   console.log('- DB_PASSWORD:', process.env.DB_PASSWORD ? '[SET]' : 'admin (default)');
+  
+  // Check if using Neon and provide specific guidance
+  if (process.env.DB_HOST && process.env.DB_HOST.includes('neon.tech')) {
+    console.log('=== Neon Database Detected ===');
+    console.log('Using Neon database. Make sure you are using:');
+    console.log('1. Pooler endpoint (ends with -pooler)');
+    console.log('2. Correct SSL configuration');
+    console.log('3. Database exists in Neon console');
+    console.log('4. Connection string format: postgresql://user:pass@host:port/dbname');
+    console.log('================================');
+  }
   console.log('===================================');
   
   try {
@@ -69,7 +87,14 @@ const executeQuery = async (query, params = []) => {
     const result = await client.query(query, params);
     return result;
   } catch (err) {
-    console.error('Database query error:', err);
+    console.error('Database query error:', err.message);
+    // Log additional details for Neon-specific issues
+    if (err.message.includes('timeout') || err.message.includes('terminated')) {
+      console.error('This appears to be a Neon connection issue. Check:');
+      console.error('1. SSL configuration is correct');
+      console.error('2. Connection string uses the pooler endpoint');
+      console.error('3. Database is accessible from your deployment region');
+    }
     throw err;
   } finally {
     if (client) {
