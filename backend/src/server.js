@@ -37,6 +37,18 @@ pool.on('error', (err, client) => {
 
 // Test database connection on startup
 const testConnection = async () => {
+  // Log all environment variables except password
+  console.log('=== Database Connection Attempt ===');
+  console.log('Environment variables:');
+  console.log('- DB_USER:', process.env.DB_USER || 'admin (default)');
+  console.log('- DB_HOST:', process.env.DB_HOST || 'localhost (default)');
+  console.log('- DB_NAME:', process.env.DB_NAME || 'edutaskmap (default)');
+  console.log('- DB_PORT:', process.env.DB_PORT || '5432 (default)');
+  console.log('- NODE_ENV:', process.env.NODE_ENV || 'development (default)');
+  console.log('- PORT:', process.env.PORT || '3001 (default)');
+  console.log('- DB_PASSWORD:', process.env.DB_PASSWORD ? '[SET]' : 'admin (default)');
+  console.log('===================================');
+  
   try {
     const client = await pool.connect();
     console.log('Database connection successful');
