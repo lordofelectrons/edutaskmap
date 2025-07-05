@@ -24,16 +24,22 @@ const pool = new Pool({
   // Neon-specific SSL configuration
   ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false,
-    sslmode: 'require'
+    sslmode: 'require',
+    ca: undefined,
+    key: undefined,
+    cert: undefined
   } : false,
   // Connection pool settings optimized for serverless environments
   max: 1, // Single connection for serverless (prevents connection pool issues)
-  idleTimeoutMillis: 10000, // Close idle clients after 10 seconds
-  connectionTimeoutMillis: 10000, // Increased timeout for Neon
+  idleTimeoutMillis: 5000, // Reduced idle timeout
+  connectionTimeoutMillis: 15000, // Increased connection timeout
   maxUses: 1, // Use connection only once (important for serverless)
   // Additional settings for Neon
   keepAlive: false, // Disable keep-alive for serverless
   allowExitOnIdle: true, // Allow pool to exit when idle
+  // Additional connection parameters
+  application_name: 'edutaskmap-backend',
+  statement_timeout: 30000, // 30 second statement timeout
 });
 
 // Handle pool errors
@@ -139,17 +145,66 @@ const initializeDatabase = async () => {
   }
 };
 
-// Initialize database tables
-initializeDatabase();
+// Initialize database tables with retry logic
+const initializeDatabaseWithRetry = async (maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Database initialization attempt ${attempt}/${maxRetries}`);
+      await initializeDatabase();
+      console.log('Database initialization completed successfully');
+      return true;
+    } catch (err) {
+      console.error(`Database initialization attempt ${attempt} failed:`, err.message);
+      if (attempt < maxRetries) {
+        const delay = attempt * 2000; // Exponential backoff
+        console.log(`Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        console.error('All database initialization attempts failed. Server will continue without database.');
+        return false;
+      }
+    }
+  }
+  return false;
+};
+
+// Start database initialization after a short delay
+setTimeout(() => {
+  initializeDatabaseWithRetry().catch(err => {
+    console.error('Database initialization failed:', err.message);
+  });
+}, 2000);
+
+// Database status check
+let dbInitialized = false;
+let dbInitPromise = null;
+
+const checkDatabaseStatus = () => {
+  if (!dbInitPromise) {
+    dbInitPromise = initializeDatabaseWithRetry();
+  }
+  return dbInitPromise;
+};
 
 // GET all schools
 app.get('/api/schools', async (req, res) => {
   try {
+    // Ensure database is initialized
+    await checkDatabaseStatus();
+    
     const result = await executeQuery('SELECT * FROM schools ORDER BY id');
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching schools:', err);
-    res.status(500).json({ error: 'Database error', details: err.message });
+    if (err.message.includes('timeout') || err.message.includes('connection')) {
+      res.status(503).json({ 
+        error: 'Database temporarily unavailable', 
+        details: 'Please try again in a few moments',
+        retryAfter: 30
+      });
+    } else {
+      res.status(500).json({ error: 'Database error', details: err.message });
+    }
   }
 });
 
