@@ -14,6 +14,30 @@ app.get('/', (req, res) => {
   res.json({ message: 'EduTaskMap Backend API is running!' });
 });
 
+// Simple database connectivity test
+app.get('/test-db', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT NOW() as current_time, current_database() as db_name');
+    client.release();
+    
+    res.json({
+      status: 'connected',
+      database: result.rows[0].db_name,
+      timestamp: result.rows[0].current_time,
+      message: 'Database connection successful'
+    });
+  } catch (err) {
+    console.error('Database test failed:', err.message);
+    res.status(503).json({
+      status: 'disconnected',
+      error: err.message,
+      errorCode: err.code,
+      message: 'Database connection failed'
+    });
+  }
+});
+
 // Database configuration with proper connection handling
 const pool = new Pool({
   user: process.env.DB_USER || 'admin',
