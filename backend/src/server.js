@@ -14,60 +14,105 @@ app.get('/', (req, res) => {
   res.json({ message: 'EduTaskMap Backend API is running!' });
 });
 
-// Database configuration - you'll need to set these as environment variables in Vercel
+// Database configuration with proper connection handling
 const pool = new Pool({
   user: process.env.DB_USER || 'admin',
   host: process.env.DB_HOST || 'localhost',
   database: process.env.DB_NAME || 'edutaskmap',
   password: process.env.DB_PASSWORD || 'admin',
   port: process.env.DB_PORT || 5432,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  // Connection pool settings to prevent timeouts
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+  maxUses: 7500, // Close (and replace) a connection after it has been used 7500 times
 });
 
-// Create school table if not exists
-pool.query(`
-  CREATE TABLE IF NOT EXISTS schools (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL
-  )
-`);
+// Handle pool errors
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
 
-// Create competency table if not exists
-pool.query(`
-  CREATE TABLE IF NOT EXISTS competencies (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
-  )
-`);
+// Test database connection on startup
+const testConnection = async () => {
+  try {
+    const client = await pool.connect();
+    console.log('Database connection successful');
+    client.release();
+  } catch (err) {
+    console.error('Database connection failed:', err);
+    // Don't exit process, let it continue and retry on first request
+  }
+};
 
-// Create classes table if not exists
-pool.query(`
-  CREATE TABLE IF NOT EXISTS classes (
-    id SERIAL PRIMARY KEY,
-    grade INTEGER NOT NULL CHECK (grade >= 5 AND grade <= 11),
-    name TEXT NOT NULL,
-    school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
-  )
-`);
+testConnection();
 
-// Create tasks table if not exists
-pool.query(`
-  CREATE TABLE IF NOT EXISTS tasks (
-    id SERIAL PRIMARY KEY,
-    class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
-    description TEXT NOT NULL
-  )
-`);
+// Initialize database tables with proper error handling
+const initializeDatabase = async () => {
+  const tables = [
+    `CREATE TABLE IF NOT EXISTS schools (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS competencies (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
+    )`,
+    `CREATE TABLE IF NOT EXISTS classes (
+      id SERIAL PRIMARY KEY,
+      grade INTEGER NOT NULL CHECK (grade >= 5 AND grade <= 11),
+      name TEXT NOT NULL,
+      school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
+    )`,
+    `CREATE TABLE IF NOT EXISTS tasks (
+      id SERIAL PRIMARY KEY,
+      class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
+      description TEXT NOT NULL
+    )`
+  ];
+
+  for (const tableQuery of tables) {
+    try {
+      await executeQuery(tableQuery);
+      console.log('Table created/verified successfully');
+    } catch (err) {
+      console.error('Error creating table:', err);
+      // Continue with other tables even if one fails
+    }
+  }
+};
+
+// Initialize database tables
+initializeDatabase();
+
+// Helper function for database operations with proper error handling
+const executeQuery = async (query, params = []) => {
+  let client;
+  try {
+    client = await pool.connect();
+    const result = await client.query(query, params);
+    return result;
+  } catch (err) {
+    console.error('Database query error:', err);
+    throw err;
+  } finally {
+    if (client) {
+      client.release();
+    }
+  }
+};
 
 // GET all schools
 app.get('/api/schools', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM schools ORDER BY id');
+    const result = await executeQuery('SELECT * FROM schools ORDER BY id');
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+    console.error('Error fetching schools:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 
@@ -79,14 +124,14 @@ app.post('/api/schools', async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
+    const result = await executeQuery(
       'INSERT INTO schools (name) VALUES ($1) RETURNING *',
       [name]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+    console.error('Error creating school:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 
@@ -94,7 +139,7 @@ app.post('/api/schools', async (req, res) => {
 app.get('/api/competencies', async (req, res) => {
   const { school_id } = req.query;
   try {
-    const result = await pool.query(
+    const result = await executeQuery(
       `SELECT * FROM competencies
       ${school_id ? 'WHERE competencies.school_id = $1' : ''}
       ORDER BY id`,
@@ -102,8 +147,8 @@ app.get('/api/competencies', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+    console.error('Error fetching competencies:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 
@@ -115,14 +160,14 @@ app.post('/api/competencies', async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
+    const result = await executeQuery(
       'INSERT INTO competencies (name, school_id) VALUES ($1, $2) RETURNING *',
       [name, school_id]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+    console.error('Error creating competency:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 
@@ -133,7 +178,7 @@ app.get('/api/classes/by-school-and-grade', async (req, res) => {
     return res.status(400).json({ error: 'school_name and grade are required' });
   }
   try {
-    const result = await pool.query(
+    const result = await executeQuery(
       `SELECT classes.* FROM classes
        JOIN schools ON classes.school_id = schools.id
        WHERE schools.name = $1 AND classes.grade = $2
@@ -142,8 +187,8 @@ app.get('/api/classes/by-school-and-grade', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+    console.error('Error fetching classes:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 
@@ -158,26 +203,33 @@ app.post('/api/classes', async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
+    const result = await executeQuery(
       'INSERT INTO classes (grade, name, school_id) VALUES ($1, $2, $3) RETURNING *',
       [grade, name, school_id]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+    console.error('Error creating class:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 
 // Fetch tasks by class_id
 app.get('/api/classes/:classId/tasks', async (req, res) => {
   const { classId } = req.params;
-  const tasks = await pool.query(
-    'SELECT * FROM tasks WHERE class_id = $1',
-    [classId]
-  );
-  if (tasks.length === 0) return res.status(404).json({ error: 'No tasks found for this class' });
-  res.json(tasks.rows);
+  try {
+    const result = await executeQuery(
+      'SELECT * FROM tasks WHERE class_id = $1',
+      [classId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'No tasks found for this class' });
+    }
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching tasks:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
 });
 
 // Add a new task by class_id
@@ -185,14 +237,36 @@ app.post('/api/classes/:classId/tasks', async (req, res) => {
   const { classId } = req.params;
   const { description } = req.body;
   if (!description) return res.status(400).json({ error: 'Description is required' });
-  const result = await pool.query(
-    'INSERT INTO tasks (description, class_id) VALUES ($1, $2)',
-    [description, classId]
-  );
-  if (!result) return res.status(500).json({ error: 'Failed to add task' });
-  res.status(201).json({ id: result.insertId, description, class_id: classId });
+  
+  try {
+    const result = await executeQuery(
+      'INSERT INTO tasks (description, class_id) VALUES ($1, $2) RETURNING *',
+      [description, classId]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error creating task:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    pool.end();
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    pool.end();
+  });
 });
