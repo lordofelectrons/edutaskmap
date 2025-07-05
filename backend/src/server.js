@@ -49,6 +49,23 @@ const testConnection = async () => {
 
 testConnection();
 
+// Helper function for database operations with proper error handling
+const executeQuery = async (query, params = []) => {
+  let client;
+  try {
+    client = await pool.connect();
+    const result = await client.query(query, params);
+    return result;
+  } catch (err) {
+    console.error('Database query error:', err);
+    throw err;
+  } finally {
+    if (client) {
+      client.release();
+    }
+  }
+};
+
 // Initialize database tables with proper error handling
 const initializeDatabase = async () => {
   const tables = [
@@ -87,23 +104,6 @@ const initializeDatabase = async () => {
 
 // Initialize database tables
 initializeDatabase();
-
-// Helper function for database operations with proper error handling
-const executeQuery = async (query, params = []) => {
-  let client;
-  try {
-    client = await pool.connect();
-    const result = await client.query(query, params);
-    return result;
-  } catch (err) {
-    console.error('Database query error:', err);
-    throw err;
-  } finally {
-    if (client) {
-      client.release();
-    }
-  }
-};
 
 // GET all schools
 app.get('/api/schools', async (req, res) => {
