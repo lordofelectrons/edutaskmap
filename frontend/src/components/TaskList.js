@@ -21,11 +21,23 @@ const TaskList = ({ classId }) => {
   const fetchTasksAsync = async () => {
     try {
       setLoading(true);
-      await fetchTasks(classId, setTasks)
+      setError(null);
+      await fetchTasks(classId, (data) => {
+        // Ensure data is always an array
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else {
+          console.error('Expected array but got:', data);
+          setTasks([]);
+          setError('Invalid data format received');
+        }
+      });
     } catch (err) {
-      setError(err)
+      console.error('Error fetching tasks:', err);
+      setError(err);
+      setTasks([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -34,8 +46,16 @@ const TaskList = ({ classId }) => {
   }, [classId]);
 
   const handleTaskAdded = () => {
-    fetchTasks(classId, setTasks)
-    setShowAddForm(false)
+    fetchTasks(classId, (data) => {
+      // Ensure data is always an array
+      if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        console.error('Expected array but got:', data);
+        setTasks([]);
+      }
+    });
+    setShowAddForm(false);
   }
 
   return (
@@ -55,14 +75,14 @@ const TaskList = ({ classId }) => {
               Завдання
             </Typography>
             <Chip 
-              label={`${tasks.length} завдань`}
+              label={`${Array.isArray(tasks) ? tasks.length : 0} завдань`}
               size="small"
               color="primary"
               variant="outlined"
             />
           </Box>
           
-          {tasks.length === 0 ? (
+          {!Array.isArray(tasks) || tasks.length === 0 ? (
             <Typography 
               variant="body2" 
               color="text.secondary" 
