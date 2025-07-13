@@ -8,6 +8,9 @@ import {
   ListItemText,
   Button,
   Divider,
+  Typography,
+  Avatar,
+  Chip
 } from '@mui/material'
 import AddSchoolDialog from '../dialog/AddSchoolDialog.js';
 
@@ -20,20 +23,93 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect 
   }
 
   return <>
-    <Drawer anchor="left" open={drawerOpen} onClose={() => handleSchoolSelect(false)}>
-      <Box sx={{ width: 250 }} role="presentation">
-        <List>
-          {schools.map(school => (
-            <ListItem key={school?.id} disablePadding>
-              <ListItemButton onClick={() => handleSchoolSelect(school)}>
-                <ListItemText primary={school?.name}/>
+    <Drawer 
+      anchor="left" 
+      open={drawerOpen} 
+      onClose={() => handleSchoolSelect(false)}
+      PaperProps={{
+        sx: {
+          width: 320,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }
+      }}
+    >
+      <Box sx={{ p: 3, color: 'white' }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+          Заклади освіти
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.8 }}>
+          Оберіть заклад для роботи
+        </Typography>
+      </Box>
+      
+      <Box sx={{ 
+        background: 'rgba(255, 255, 255, 0.95)',
+        height: '100%',
+        borderRadius: '20px 0 0 0'
+      }}>
+        <List sx={{ pt: 2 }}>
+          {schools.map((school, index) => (
+            <ListItem key={school?.id} disablePadding sx={{ px: 2 }}>
+              <ListItemButton 
+                onClick={() => handleSchoolSelect(school)}
+                sx={{ 
+                  borderRadius: 2,
+                  mx: 1,
+                  mb: 1,
+                  '&:hover': {
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    transform: 'translateX(4px)'
+                  }
+                }}
+              >
+                <Avatar sx={{ 
+                  bgcolor: 'primary.main',
+                  width: 32,
+                  height: 32,
+                  mr: 2
+                }}>
+                  {school?.name.charAt(0).toUpperCase()}
+                </Avatar>
+                <ListItemText 
+                  primary={school?.name}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      fontWeight: 500,
+                      color: '#1f2937'
+                    }
+                  }}
+                />
+                <Chip 
+                  label="Активний" 
+                  size="small" 
+                  color="primary" 
+                  variant="outlined"
+                  sx={{ fontSize: '0.7rem' }}
+                />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
-        <Divider/>
-        <Box sx={{ p: 2 }}>
-          <Button variant="outlined" fullWidth onClick={() => setDialogOpen(true)}>Додати нову</Button>
+        
+        <Divider sx={{ mx: 3, my: 2 }} />
+        
+        <Box sx={{ p: 3 }}>
+          <Button 
+            variant="contained" 
+            fullWidth 
+            onClick={() => setDialogOpen(true)}
+            sx={{ 
+              background: 'linear-gradient(45deg, #667eea, #764ba2)',
+              borderRadius: 2,
+              py: 1.5,
+              '&:hover': {
+                background: 'linear-gradient(45deg, #5a67d8, #6b46c1)'
+              }
+            }}
+          >
+            Додати нову школу
+          </Button>
         </Box>
       </Box>
     </Drawer>
