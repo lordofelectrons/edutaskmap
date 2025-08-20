@@ -149,7 +149,7 @@ export default function EduTaskMap () {
                 }
               }}
             >
-              Додати компетенцію
+              Додати компетентність
             </Button>
           </Box>
 

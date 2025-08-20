@@ -35,7 +35,7 @@ export default function CompetencyCard({ competency }) {
         }}
       >
         <Typography variant="h6" fontWeight="bold">
-          Компетенція {competency.id}
+          Компетентність {competency.id}
         </Typography>
         <Chip 
           label="Активна" 
