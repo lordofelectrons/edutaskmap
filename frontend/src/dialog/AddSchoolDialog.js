@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, CircularProgress } from '@mui/material';
 import { addSchool } from '../requests/schools'
 
 export default function AddSchoolDialog({ open, onClose, onSchoolAdded }) {
@@ -40,7 +40,13 @@ export default function AddSchoolDialog({ open, onClose, onSchoolAdded }) {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={loading}>Cancel</Button>
-        <Button onClick={handleAdd} disabled={loading || !schoolName.trim()}>Add</Button>
+        <Button 
+          onClick={handleAdd} 
+          disabled={loading || !schoolName.trim()}
+          startIcon={loading ? <CircularProgress size={16} /> : null}
+        >
+          {loading ? 'Adding...' : 'Add'}
+        </Button>
       </DialogActions>
     </Dialog>
   );

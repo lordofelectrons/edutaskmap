@@ -6,7 +6,8 @@ import {
   Typography,
   Chip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  CircularProgress
 } from '@mui/material';
 import ClassCard from './ClassCard';
 import AddClassDialog from '../dialog/AddClassDialog';
@@ -17,6 +18,7 @@ export default function GradeClasses({ grade, color, school }) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newClassName, setNewClassName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [addingClass, setAddingClass] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -33,10 +35,12 @@ export default function GradeClasses({ grade, color, school }) {
 
   const handleAddClass = () => {
     if (!newClassName.trim() || !school) return;
+    setAddingClass(true);
     addClass({ grade, name: newClassName, school_id: school.id }, (newCls) => {
       setClasses(prev => [...prev, newCls]);
       setNewClassName('');
       setAddDialogOpen(false);
+      setAddingClass(false);
     });
   };
 
@@ -85,7 +89,7 @@ export default function GradeClasses({ grade, color, school }) {
       <Box sx={{ p: 3 }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <div className="loading-spinner"></div>
+            <CircularProgress />
           </Box>
         ) : (
           <>
@@ -141,7 +145,8 @@ export default function GradeClasses({ grade, color, school }) {
         onAdd={handleAddClass}
         value={newClassName}
         onChange={e => setNewClassName(e.target.value)}
-        disabled={!newClassName.trim() || !school}
+        disabled={!newClassName.trim() || !school || addingClass}
+        loading={addingClass}
       />
     </Paper>
   );

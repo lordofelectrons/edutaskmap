@@ -6,7 +6,8 @@ import {
   DialogActions, 
   TextField, 
   Button,
-  Box
+  Box,
+  CircularProgress
 } from '@mui/material'
 import { addTask } from '../requests/tasks'
 
@@ -79,6 +80,7 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
             type="submit" 
             disabled={isSubmitting || !description.trim()}
             variant="contained"
+            startIcon={isSubmitting ? <CircularProgress size={16} /> : null}
             sx={{
               background: 'linear-gradient(45deg, #10b981, #059669)',
               '&:hover': {

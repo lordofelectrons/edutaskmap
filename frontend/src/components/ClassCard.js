@@ -1,6 +1,6 @@
 // frontend/src/components/ClassCard.js
 import { useState } from 'react';
-import { Card, CardContent, Typography, Box, Chip, IconButton, Tooltip } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip, IconButton, Tooltip, CircularProgress } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import TaskList from './TaskList';
 import { deleteClass } from '../requests/classes';
@@ -75,7 +75,11 @@ export default function ClassCard({ classItem, onClassDeleted }) {
                 }
               }}
             >
-              <DeleteIcon fontSize="small" />
+              {deleting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <DeleteIcon fontSize="small" />
+              )}
             </IconButton>
           </Tooltip>
         </Box>

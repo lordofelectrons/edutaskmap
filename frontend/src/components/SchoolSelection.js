@@ -4,11 +4,12 @@ import {
   Box,
   Button,
   Chip,
-  Avatar
+  Avatar,
+  CircularProgress
 } from '@mui/material';
 import SchoolDrawer from './SchoolDrawer';
 
-export default function SchoolSelection ({ schools, selectedSchool, setSelectedSchool, syncSchoolList }) {
+export default function SchoolSelection ({ schools, selectedSchool, setSelectedSchool, syncSchoolList, loadingSchools = false }) {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const handleSchoolSelect = (school) => {
@@ -48,6 +49,8 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
             <Button 
               variant="contained" 
               onClick={handleSchoolSelectionOpening}
+              disabled={loadingSchools}
+              startIcon={loadingSchools ? <CircularProgress size={20} color="inherit" /> : null}
               sx={{ 
                 background: 'linear-gradient(45deg, #667eea, #764ba2)',
                 color: 'white',
@@ -64,7 +67,7 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
                 }
               }}
             >
-              Заклад освіти
+              {loadingSchools ? 'Завантаження...' : 'Заклад освіти'}
             </Button>
             
             {selectedSchool && (

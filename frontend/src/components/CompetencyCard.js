@@ -1,6 +1,6 @@
 // frontend/src/components/CompetencyCard.js
 import { useState } from 'react';
-import { Card, Box, CardContent, Typography, Chip, IconButton, Tooltip } from '@mui/material';
+import { Card, Box, CardContent, Typography, Chip, IconButton, Tooltip, CircularProgress } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import { deleteCompetency } from '../requests/competencies';
 
@@ -84,7 +84,11 @@ export default function CompetencyCard({ competency, onCompetencyDeleted }) {
                 }
               }}
             >
-              <DeleteIcon fontSize="small" />
+              {deleting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <DeleteIcon fontSize="small" />
+              )}
             </IconButton>
           </Tooltip>
         </Box>

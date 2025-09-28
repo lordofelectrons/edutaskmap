@@ -9,7 +9,8 @@ import {
   Paper,
   Chip,
   IconButton,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from '@mui/material'
 import { Delete as DeleteIcon } from '@mui/icons-material'
 import { fetchTasks, deleteTask } from '../requests/tasks'
@@ -82,7 +83,7 @@ const TaskList = ({ classId }) => {
     <Box>
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-          <div className="loading-spinner"></div>
+          <CircularProgress />
         </Box>
       ) : error ? (
         <Typography variant="body2" color="error" sx={{ textAlign: 'center', py: 2 }}>
@@ -146,7 +147,11 @@ const TaskList = ({ classId }) => {
                           }
                         }}
                       >
-                        <DeleteIcon fontSize="small" />
+                        {deletingTaskId === task.id ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <DeleteIcon fontSize="small" />
+                        )}
                       </IconButton>
                     </Tooltip>
                   </ListItem>

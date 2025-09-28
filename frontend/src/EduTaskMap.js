@@ -8,7 +8,8 @@ import {
   Divider,
   Chip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  CircularProgress
 } from '@mui/material'
 import { fetchSchools } from './requests/schools.js'
 import { fetchCompetenciesBySchoolId, addCompetency } from './requests/competencies.js'
@@ -36,14 +37,18 @@ export default function EduTaskMap () {
   const [addCompetencyDialogOpen, setAddCompetencyDialogOpen] = useState(false)
   const [newCompetencyName, setNewCompetencyName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [addingCompetency, setAddingCompetency] = useState(false)
+  const [loadingSchools, setLoadingSchools] = useState(true)
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const syncSchoolList = () => {
+    setLoadingSchools(true)
     fetchSchools((data) => {
       setSchools(data)
       if (data.length > 0 && !selectedSchool) setSelectedSchool(data[0])
+      setLoadingSchools(false)
     })
   }
 
@@ -66,6 +71,7 @@ export default function EduTaskMap () {
 
   const handleAddCompetency = () => {
     if (!newCompetencyName.trim() || !selectedSchool) return
+    setAddingCompetency(true)
     addCompetency({ name: newCompetencyName, school_id: selectedSchool.id }, (newComp) => {
       setCompetencies(prev => [
         ...prev,
@@ -73,6 +79,7 @@ export default function EduTaskMap () {
       ])
       setNewCompetencyName('')
       setAddCompetencyDialogOpen(false)
+      setAddingCompetency(false)
     })
   }
 
@@ -100,6 +107,7 @@ export default function EduTaskMap () {
             selectedSchool={selectedSchool} 
             setSelectedSchool={setSelectedSchool} 
             syncSchoolList={syncSchoolList}
+            loadingSchools={loadingSchools}
           />
 
           <Box sx={{ textAlign: 'center', mb: 3 }}>
@@ -159,7 +167,7 @@ export default function EduTaskMap () {
 
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <div className="loading-spinner"></div>
+              <CircularProgress />
             </Box>
           ) : (
             <Box sx={{ 
@@ -211,7 +219,8 @@ export default function EduTaskMap () {
           onAdd={handleAddCompetency}
           value={newCompetencyName}
           onChange={e => setNewCompetencyName(e.target.value)}
-          disabled={!newCompetencyName.trim() || !selectedSchool}
+          disabled={!newCompetencyName.trim() || !selectedSchool || addingCompetency}
+          loading={addingCompetency}
         />
       </Container>
     </Box>

@@ -12,7 +12,8 @@ import {
   Avatar,
   Chip,
   IconButton,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from '@mui/material'
 import { Delete as DeleteIcon } from '@mui/icons-material'
 import AddSchoolDialog from '../dialog/AddSchoolDialog.js';
@@ -125,7 +126,11 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
                         }
                       }}
                     >
-                      <DeleteIcon fontSize="small" />
+                      {deletingSchoolId === school.id ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : (
+                        <DeleteIcon fontSize="small" />
+                      )}
                     </IconButton>
                   </Tooltip>
                 </Box>
