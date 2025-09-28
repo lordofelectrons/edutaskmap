@@ -40,6 +40,10 @@ export default function GradeClasses({ grade, color, school }) {
     });
   };
 
+  const handleClassDeleted = (deletedClassId) => {
+    setClasses(prev => prev.filter(cls => cls.id !== deletedClassId));
+  };
+
   return (
     <Paper 
       elevation={3} 
@@ -119,7 +123,11 @@ export default function GradeClasses({ grade, color, school }) {
                 </Typography>
               ) : (
                 classes.map(cls => (
-                  <ClassCard key={cls.id} classItem={cls} />
+                  <ClassCard 
+                    key={cls.id} 
+                    classItem={cls} 
+                    onClassDeleted={handleClassDeleted}
+                  />
                 ))
               )}
             </Box>

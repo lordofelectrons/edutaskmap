@@ -15,3 +15,11 @@ export async function addSchool({ name }, cb) {
   const data = await res.json();
   cb(data);
 }
+
+export async function deleteSchool(id, cb) {
+  const res = await fetch(`${API_BASE_URL}/api/schools/${id}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  cb(data);
+}

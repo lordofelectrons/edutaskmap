@@ -23,8 +23,20 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
         setDrawerOpen(true);
     }
 
+    const handleSchoolDeleted = (deletedSchoolId) => {
+        if (selectedSchool && selectedSchool.id === deletedSchoolId) {
+            setSelectedSchool(null);
+        }
+        syncSchoolList();
+    }
+
     return <>
-        <SchoolDrawer schools={schools} drawerOpen={drawerOpen} handleSchoolSelect={handleSchoolSelect} />
+        <SchoolDrawer 
+            schools={schools} 
+            drawerOpen={drawerOpen} 
+            handleSchoolSelect={handleSchoolSelect}
+            onSchoolDeleted={handleSchoolDeleted}
+        />
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 

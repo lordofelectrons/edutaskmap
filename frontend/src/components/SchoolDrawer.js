@@ -10,16 +10,40 @@ import {
   Divider,
   Typography,
   Avatar,
-  Chip
+  Chip,
+  IconButton,
+  Tooltip
 } from '@mui/material'
+import { Delete as DeleteIcon } from '@mui/icons-material'
 import AddSchoolDialog from '../dialog/AddSchoolDialog.js';
+import { deleteSchool } from '../requests/schools.js';
 
-export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect }) {
+export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect, onSchoolDeleted }) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deletingSchoolId, setDeletingSchoolId] = useState(null);
 
   const handleSchoolAddition = (school) => {
     handleSchoolSelect(school);
     setDialogOpen(false);
+  }
+
+  const handleDeleteSchool = async (schoolId, event) => {
+    event.stopPropagation(); // Prevent triggering the school selection
+    if (window.confirm('Ви впевнені, що хочете видалити цю школу? Всі пов\'язані дані будуть втрачені.')) {
+      setDeletingSchoolId(schoolId);
+      try {
+        await deleteSchool(schoolId, (data) => {
+          if (onSchoolDeleted) {
+            onSchoolDeleted(schoolId);
+          }
+        });
+      } catch (error) {
+        console.error('Error deleting school:', error);
+        alert('Помилка при видаленні школи');
+      } finally {
+        setDeletingSchoolId(null);
+      }
+    }
   }
 
   return <>
@@ -80,13 +104,31 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect 
                     }
                   }}
                 />
-                <Chip 
-                  label="Активний" 
-                  size="small" 
-                  color="primary" 
-                  variant="outlined"
-                  sx={{ fontSize: '0.7rem' }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip 
+                    label="Активний" 
+                    size="small" 
+                    color="primary" 
+                    variant="outlined"
+                    sx={{ fontSize: '0.7rem' }}
+                  />
+                  <Tooltip title="Видалити школу">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleDeleteSchool(school.id, e)}
+                      disabled={deletingSchoolId === school.id}
+                      sx={{
+                        color: 'error.main',
+                        '&:hover': {
+                          backgroundColor: 'error.light',
+                          color: 'white'
+                        }
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               </ListItemButton>
             </ListItem>
           ))}

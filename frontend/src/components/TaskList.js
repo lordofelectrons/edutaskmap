@@ -7,9 +7,12 @@ import {
   ListItem, 
   ListItemText,
   Paper,
-  Chip
+  Chip,
+  IconButton,
+  Tooltip
 } from '@mui/material'
-import { fetchTasks } from '../requests/tasks'
+import { Delete as DeleteIcon } from '@mui/icons-material'
+import { fetchTasks, deleteTask } from '../requests/tasks'
 import AddTaskDialog from '../dialog/AddTaskDialog';
 
 const TaskList = ({ classId }) => {
@@ -17,6 +20,7 @@ const TaskList = ({ classId }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [deletingTaskId, setDeletingTaskId] = useState(null)
 
   const fetchTasksAsync = async () => {
     try {
@@ -56,6 +60,22 @@ const TaskList = ({ classId }) => {
       }
     });
     setShowAddForm(false);
+  }
+
+  const handleDeleteTask = async (taskId) => {
+    if (window.confirm('Ви впевнені, що хочете видалити це завдання?')) {
+      setDeletingTaskId(taskId);
+      try {
+        await deleteTask(taskId, (data) => {
+          setTasks(prev => prev.filter(task => task.id !== taskId));
+        });
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        alert('Помилка при видаленні завдання');
+      } finally {
+        setDeletingTaskId(null);
+      }
+    }
   }
 
   return (
@@ -113,6 +133,22 @@ const TaskList = ({ classId }) => {
                         }
                       }}
                     />
+                    <Tooltip title="Видалити завдання">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteTask(task.id)}
+                        disabled={deletingTaskId === task.id}
+                        sx={{
+                          color: 'error.main',
+                          '&:hover': {
+                            backgroundColor: 'error.light',
+                            color: 'white'
+                          }
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </ListItem>
                 ))}
               </List>

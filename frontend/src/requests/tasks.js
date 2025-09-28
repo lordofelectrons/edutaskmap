@@ -32,3 +32,11 @@ export async function addTask({ description, classId }, cb) {
   const data = await res.json();
   cb();
 }
+
+export async function deleteTask(id, cb) {
+  const res = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  cb(data);
+}

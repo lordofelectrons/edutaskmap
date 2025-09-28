@@ -1,7 +1,31 @@
 // frontend/src/components/CompetencyCard.js
-import { Card, Box, CardContent, Typography, Chip } from '@mui/material';
+import { useState } from 'react';
+import { Card, Box, CardContent, Typography, Chip, IconButton, Tooltip } from '@mui/material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
+import { deleteCompetency } from '../requests/competencies';
 
-export default function CompetencyCard({ competency }) {
+export default function CompetencyCard({ competency, onCompetencyDeleted }) {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async (event) => {
+    event.stopPropagation();
+    if (window.confirm('Ви впевнені, що хочете видалити цю компетентність?')) {
+      setDeleting(true);
+      try {
+        await deleteCompetency(competency.id, (data) => {
+          if (onCompetencyDeleted) {
+            onCompetencyDeleted(competency.id);
+          }
+        });
+      } catch (error) {
+        console.error('Error deleting competency:', error);
+        alert('Помилка при видаленні компетентності');
+      } finally {
+        setDeleting(false);
+      }
+    }
+  };
+
   return (
     <Card sx={{ 
       maxWidth: 350,
@@ -37,15 +61,33 @@ export default function CompetencyCard({ competency }) {
         <Typography variant="h6" fontWeight="bold">
           Компетентність {competency.id}
         </Typography>
-        <Chip 
-          label="Активна" 
-          size="small" 
-          sx={{ 
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            color: 'white',
-            fontWeight: 'bold'
-          }}
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip 
+            label="Активна" 
+            size="small" 
+            sx={{ 
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+          />
+          <Tooltip title="Видалити компетентність">
+            <IconButton
+              size="small"
+              onClick={handleDelete}
+              disabled={deleting}
+              sx={{
+                color: 'rgba(255,255,255,0.8)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  color: 'white'
+                }
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
       <CardContent sx={{ p: 3 }}>
         <Typography 

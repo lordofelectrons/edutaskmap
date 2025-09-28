@@ -251,6 +251,28 @@ app.post('/api/schools', async (req, res) => {
   }
 });
 
+// DELETE a school
+app.delete('/api/schools/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'School ID is required' });
+  }
+
+  try {
+    const result = await executeQuery(
+      'DELETE FROM schools WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+    res.json({ message: 'School deleted successfully', school: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting school:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
 // GET competencies by school_id
 app.get('/api/competencies', async (req, res) => {
   const { school_id } = req.query;
@@ -283,6 +305,28 @@ app.post('/api/competencies', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Error creating competency:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// DELETE a competency
+app.delete('/api/competencies/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Competency ID is required' });
+  }
+
+  try {
+    const result = await executeQuery(
+      'DELETE FROM competencies WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Competency not found' });
+    }
+    res.json({ message: 'Competency deleted successfully', competency: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting competency:', err);
     res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
@@ -330,6 +374,28 @@ app.post('/api/classes', async (req, res) => {
   }
 });
 
+// DELETE a class
+app.delete('/api/classes/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Class ID is required' });
+  }
+
+  try {
+    const result = await executeQuery(
+      'DELETE FROM classes WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    res.json({ message: 'Class deleted successfully', class: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting class:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
 // Fetch tasks by class_id
 app.get('/api/classes/:classId/tasks', async (req, res) => {
   const { classId } = req.params;
@@ -362,6 +428,28 @@ app.post('/api/classes/:classId/tasks', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Error creating task:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// DELETE a task
+app.delete('/api/tasks/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Task ID is required' });
+  }
+
+  try {
+    const result = await executeQuery(
+      'DELETE FROM tasks WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    res.json({ message: 'Task deleted successfully', task: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting task:', err);
     res.status(500).json({ error: 'Database error', details: err.message });
   }
 });

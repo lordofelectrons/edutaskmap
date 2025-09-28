@@ -15,3 +15,11 @@ export async function addClass({ grade, name, school_id }, cb) {
   const data = await res.json();
   cb(data);
 }
+
+export async function deleteClass(id, cb) {
+  const res = await fetch(`${API_BASE_URL}/api/classes/${id}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  cb(data);
+}

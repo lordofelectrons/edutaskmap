@@ -76,6 +76,10 @@ export default function EduTaskMap () {
     })
   }
 
+  const handleCompetencyDeleted = (deletedCompetencyId) => {
+    setCompetencies(prev => prev.filter(comp => comp.id !== deletedCompetencyId))
+  }
+
   return (
     <Box sx={{ 
       minHeight: '100vh',
@@ -164,7 +168,11 @@ export default function EduTaskMap () {
               gap: 3 
             }}>
               {competencies.map(comp => (
-                <CompetencyCard key={comp.id} competency={comp}/>
+                <CompetencyCard 
+                  key={comp.id} 
+                  competency={comp}
+                  onCompetencyDeleted={handleCompetencyDeleted}
+                />
               ))}
             </Box>
           )}

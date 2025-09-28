@@ -21,3 +21,11 @@ export async function addCompetency({ name, school_id }, cb) {
   const data = await res.json();
   cb(data);
 }
+
+export async function deleteCompetency(id, cb) {
+  const res = await fetch(`${API_BASE_URL}/api/competencies/${id}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  cb(data);
+}
