@@ -4,6 +4,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { detectUrl, isMetadataSupported } from './utils/linkUtils.js';
 import { fetchMetadata } from './utils/metadataFetcher.js';
+import { runMigrationsWithRetry } from './migrations/index.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -156,14 +157,7 @@ const initializeDatabase = async () => {
     `CREATE TABLE IF NOT EXISTS tasks (
       id SERIAL PRIMARY KEY,
       class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
-      description TEXT NOT NULL,
-      url TEXT,
-      title TEXT,
-      site_name TEXT,
-      image_url TEXT,
-      domain TEXT,
-      metadata_fetched BOOLEAN DEFAULT FALSE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      description TEXT NOT NULL
     )`
   ];
 
@@ -183,9 +177,21 @@ const initializeDatabaseWithRetry = async (maxRetries = 3) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Database initialization attempt ${attempt}/${maxRetries}`);
+      
+      // First, create basic tables
       await initializeDatabase();
-      console.log('Database initialization completed successfully');
-      return true;
+      console.log('Basic database tables created/verified successfully');
+      
+      // Then run migrations to add new columns
+      console.log('Running database migrations...');
+      const migrationSuccess = await runMigrationsWithRetry(maxRetries);
+      
+      if (migrationSuccess) {
+        console.log('Database initialization and migrations completed successfully');
+        return true;
+      } else {
+        throw new Error('Migrations failed');
+      }
     } catch (err) {
       console.error(`Database initialization attempt ${attempt} failed:`, err.message);
       if (attempt < maxRetries) {

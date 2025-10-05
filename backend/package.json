@@ -6,7 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "migrate": "node run-migrations.js",
+    "migrate:list": "node scripts/migration-utils.js list",
+    "migrate:create": "node scripts/migration-utils.js create",
+    "migrate:status": "node scripts/migration-utils.js status",
+    "dev": "node src/server.js"
   },
   "keywords": [],
   "author": "",
