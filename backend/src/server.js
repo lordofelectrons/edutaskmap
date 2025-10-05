@@ -2,6 +2,8 @@ import express from 'express';
 import { Pool } from 'pg';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { detectUrl, isMetadataSupported } from './utils/linkUtils.js';
+import { fetchMetadata } from './utils/metadataFetcher.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -154,7 +156,14 @@ const initializeDatabase = async () => {
     `CREATE TABLE IF NOT EXISTS tasks (
       id SERIAL PRIMARY KEY,
       class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
-      description TEXT NOT NULL
+      description TEXT NOT NULL,
+      url TEXT,
+      title TEXT,
+      site_name TEXT,
+      image_url TEXT,
+      domain TEXT,
+      metadata_fetched BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`
   ];
 
@@ -401,7 +410,9 @@ app.get('/api/classes/:classId/tasks', async (req, res) => {
   const { classId } = req.params;
   try {
     const result = await executeQuery(
-      'SELECT * FROM tasks WHERE class_id = $1',
+      `SELECT id, class_id, description, url, title, site_name, image_url, domain, 
+              metadata_fetched, created_at 
+       FROM tasks WHERE class_id = $1 ORDER BY created_at DESC`,
       [classId]
     );
     if (result.rows.length === 0) {
@@ -421,10 +432,49 @@ app.post('/api/classes/:classId/tasks', async (req, res) => {
   if (!description) return res.status(400).json({ error: 'Description is required' });
   
   try {
+    // Detect URL in description
+    const detectedUrl = detectUrl(description);
+    let metadata = {
+      url: detectedUrl,
+      title: null,
+      site_name: null,
+      image_url: null,
+      domain: null,
+      metadata_fetched: false
+    };
+
+    // If URL is detected and metadata fetching is supported, fetch metadata
+    if (detectedUrl && isMetadataSupported(detectedUrl)) {
+      try {
+        const fetchedMetadata = await fetchMetadata(detectedUrl);
+        metadata = {
+          ...metadata,
+          ...fetchedMetadata,
+          metadata_fetched: true
+        };
+      } catch (err) {
+        console.error('Error fetching metadata for URL:', detectedUrl, err.message);
+        // Continue with basic metadata (URL and domain)
+        metadata.domain = new URL(detectedUrl).hostname;
+      }
+    }
+
+    // Insert task with metadata
     const result = await executeQuery(
-      'INSERT INTO tasks (description, class_id) VALUES ($1, $2) RETURNING *',
-      [description, classId]
+      `INSERT INTO tasks (description, class_id, url, title, site_name, image_url, domain, metadata_fetched) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [
+        description, 
+        classId, 
+        metadata.url,
+        metadata.title,
+        metadata.site_name,
+        metadata.image_url,
+        metadata.domain,
+        metadata.metadata_fetched
+      ]
     );
+    
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Error creating task:', err);

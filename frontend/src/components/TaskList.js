@@ -10,11 +10,190 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  CircularProgress
+  CircularProgress,
+  Card,
+  CardContent,
+  CardMedia,
+  Link,
+  Avatar
 } from '@mui/material'
-import { Delete as DeleteIcon } from '@mui/icons-material'
+import { Delete as DeleteIcon, Link as LinkIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material'
 import { fetchTasks, deleteTask } from '../requests/tasks'
 import AddTaskDialog from '../dialog/AddTaskDialog';
+
+// Component for rendering individual task cards
+const TaskCard = ({ task, onDelete, isDeleting }) => {
+  const hasMetadata = task.url && task.metadata_fetched;
+  const hasImage = hasMetadata && task.image_url;
+
+  const handleLinkClick = () => {
+    if (task.url) {
+      window.open(task.url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  if (hasMetadata) {
+    return (
+      <Card 
+        sx={{ 
+          mb: 1, 
+          cursor: task.url ? 'pointer' : 'default',
+          '&:hover': task.url ? {
+            boxShadow: 3,
+            transform: 'translateY(-1px)',
+            transition: 'all 0.2s ease-in-out'
+          } : {}
+        }}
+        onClick={handleLinkClick}
+      >
+        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            {hasImage && (
+              <CardMedia
+                component="img"
+                sx={{ 
+                  width: 80, 
+                  height: 80, 
+                  borderRadius: 1,
+                  objectFit: 'cover'
+                }}
+                image={task.image_url}
+                alt={task.title || 'Link preview'}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            )}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontSize: '0.95rem',
+                      fontWeight: 600,
+                      color: '#1f2937',
+                      mb: 0.5,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {task.title || task.description}
+                  </Typography>
+                  {task.title && task.description !== task.title && (
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{
+                        fontSize: '0.85rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
+                      {task.description}
+                    </Typography>
+                  )}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                    {task.site_name && (
+                      <Chip 
+                        label={task.site_name} 
+                        size="small" 
+                        variant="outlined"
+                        sx={{ 
+                          fontSize: '0.75rem',
+                          height: 20,
+                          '& .MuiChip-label': { px: 1 }
+                        }}
+                      />
+                    )}
+                    <LinkIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  </Box>
+                </Box>
+                <Tooltip title="Видалити завдання">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(task.id);
+                    }}
+                    disabled={isDeleting}
+                    sx={{
+                      color: 'error.main',
+                      '&:hover': {
+                        backgroundColor: 'error.light',
+                        color: 'white'
+                      }
+                    }}
+                  >
+                    {isDeleting ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <DeleteIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Fallback for tasks without metadata
+  return (
+    <Paper 
+      elevation={1} 
+      sx={{ 
+        p: 2, 
+        mb: 1,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        '&:hover': {
+          backgroundColor: '#f9fafb'
+        }
+      }}
+    >
+      <ListItemText
+        primary={task.description}
+        sx={{
+          '& .MuiListItemText-primary': {
+            fontSize: '0.9rem',
+            fontWeight: 500,
+            color: '#374151'
+          }
+        }}
+      />
+      <Tooltip title="Видалити завдання">
+        <IconButton
+          size="small"
+          onClick={() => onDelete(task.id)}
+          disabled={isDeleting}
+          sx={{
+            color: 'error.main',
+            '&:hover': {
+              backgroundColor: 'error.light',
+              color: 'white'
+            }
+          }}
+        >
+          {isDeleting ? (
+            <CircularProgress size={16} color="inherit" />
+          ) : (
+            <DeleteIcon fontSize="small" />
+          )}
+        </IconButton>
+      </Tooltip>
+    </Paper>
+  );
+};
 
 const TaskList = ({ classId }) => {
   const [tasks, setTasks] = useState([])
@@ -112,52 +291,16 @@ const TaskList = ({ classId }) => {
               Поки що немає завдань
             </Typography>
           ) : (
-            <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-              <List sx={{ py: 0 }}>
-                {tasks.map((task, index) => (
-                  <ListItem 
-                    key={task.id}
-                    sx={{ 
-                      borderBottom: index < tasks.length - 1 ? '1px solid #f3f4f6' : 'none',
-                      '&:hover': {
-                        backgroundColor: '#f9fafb'
-                      }
-                    }}
-                  >
-                    <ListItemText
-                      primary={task.description}
-                      sx={{
-                        '& .MuiListItemText-primary': {
-                          fontSize: '0.9rem',
-                          fontWeight: 500,
-                          color: '#374151'
-                        }
-                      }}
-                    />
-                    <Tooltip title="Видалити завдання">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteTask(task.id)}
-                        disabled={deletingTaskId === task.id}
-                        sx={{
-                          color: 'error.main',
-                          '&:hover': {
-                            backgroundColor: 'error.light',
-                            color: 'white'
-                          }
-                        }}
-                      >
-                        {deletingTaskId === task.id ? (
-                          <CircularProgress size={16} color="inherit" />
-                        ) : (
-                          <DeleteIcon fontSize="small" />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
+            <Box sx={{ mt: 1 }}>
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onDelete={handleDeleteTask}
+                  isDeleting={deletingTaskId === task.id}
+                />
+              ))}
+            </Box>
           )}
         </>
       )}
