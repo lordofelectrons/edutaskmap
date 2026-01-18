@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useCallback } from 'react'
+import { React, useState, useEffect, useCallback, useRef } from 'react'
 import {
   Typography,
   Box,
@@ -37,38 +37,54 @@ export default function EduTaskMap () {
   const [loading, setLoading] = useState(false)
   const [addingCompetency, setAddingCompetency] = useState(false)
   const [loadingSchools, setLoadingSchools] = useState(true)
+  const fetchingSchoolIdRef = useRef(null)
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const fetchCompetenciesForSchool = useCallback((schoolId) => {
+    // Prevent duplicate fetches
+    if (fetchingSchoolIdRef.current === schoolId) return
+    fetchingSchoolIdRef.current = schoolId
+    
+    setLoading(true);
+    fetchCompetenciesBySchoolId(schoolId, (data) => {
+      setCompetencies(data.map((c, i) => ({
+        ...c,
+        color: colorPalette[i % colorPalette.length]
+      })))
+      setLoading(false);
+      fetchingSchoolIdRef.current = null
+    })
+  }, [])
 
   const syncSchoolList = useCallback(() => {
     setLoadingSchools(true)
     fetchSchools((data) => {
       setSchools(data)
+      const firstSchool = data.length > 0 ? data[0] : null
       setSelectedSchool((prev) => {
-        if (data.length > 0 && !prev) return data[0]
-        return prev
+        // If we're setting the first school and didn't have one before, 
+        // start fetching competencies immediately (don't wait for state update)
+        if (firstSchool && !prev) {
+          fetchCompetenciesForSchool(firstSchool.id)
+          return firstSchool
+        }
+        return prev || firstSchool
       })
       setLoadingSchools(false)
     })
-  }, [])
+  }, [fetchCompetenciesForSchool])
 
   useEffect(() => {
     syncSchoolList();
   }, [syncSchoolList])
 
   useEffect(() => {
-    if (selectedSchool) {
-      setLoading(true);
-      fetchCompetenciesBySchoolId(selectedSchool?.id, (data) => {
-        setCompetencies(data.map((c, i) => ({
-          ...c,
-          color: colorPalette[i % colorPalette.length]
-        })))
-        setLoading(false);
-      })
+    if (selectedSchool && fetchingSchoolIdRef.current !== selectedSchool.id) {
+      fetchCompetenciesForSchool(selectedSchool.id)
     }
-  }, [selectedSchool])
+  }, [selectedSchool, fetchCompetenciesForSchool])
 
   const handleAddCompetency = () => {
     if (!newCompetencyName.trim() || !selectedSchool) return

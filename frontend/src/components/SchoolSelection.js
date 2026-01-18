@@ -19,7 +19,10 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
     };
 
     const handleSchoolSelectionOpening = () => {
-        syncSchoolList();
+        // Only fetch if schools haven't been loaded yet
+        if (schools.length === 0) {
+            syncSchoolList();
+        }
         setDrawerOpen(true);
     }
 
