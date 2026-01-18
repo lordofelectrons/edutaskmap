@@ -65,7 +65,7 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
                 }
               }}
             >
-              Заклад освіти
+              Шкільна команда
             </Button>
             
             {selectedSchool && (
@@ -82,7 +82,7 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
                     {selectedSchool.name}
                   </Typography>
                   <Chip 
-                    label="Активний заклад" 
+                    label="Активна шкільна команда" 
                     size="small" 
                     color="success" 
                     variant="outlined"

@@ -30,7 +30,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
 
   const handleDeleteSchool = async (schoolId, event) => {
     event.stopPropagation(); // Prevent triggering the school selection
-    if (window.confirm('Ви впевнені, що хочете видалити цю школу? Всі пов\'язані дані будуть втрачені.')) {
+    if (window.confirm('Ви впевнені, що хочете видалити цю шкільну команду? Всі пов\'язані дані будуть втрачені.')) {
       setDeletingSchoolId(schoolId);
       try {
         await deleteSchool(schoolId, (data) => {
@@ -40,7 +40,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
         });
       } catch (error) {
         console.error('Error deleting school:', error);
-        alert('Помилка при видаленні школи');
+        alert('Помилка при видаленні шкільної команди');
       } finally {
         setDeletingSchoolId(null);
       }
@@ -61,10 +61,10 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
     >
       <Box sx={{ p: 3, color: 'white' }}>
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          Заклади освіти
+          Шкільні команди
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.8 }}>
-          Оберіть заклад для роботи
+          Оберіть шкільну команду для роботи
         </Typography>
       </Box>
       
@@ -119,7 +119,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
                       variant="outlined"
                       sx={{ fontSize: '0.7rem' }}
                     />
-                    <Tooltip title="Видалити школу">
+                    <Tooltip title="Видалити шкільну команду">
                       <IconButton
                         size="small"
                         onClick={(e) => handleDeleteSchool(school.id, e)}
@@ -161,7 +161,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
                 }
               }}
             >
-              Додати нову школу
+              Додати нову шкільну команду
             </Button>
           </Box>
           </>
