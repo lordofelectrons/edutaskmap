@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   Paper,
-  Divider,
   useTheme,
   useMediaQuery,
   CircularProgress
