@@ -6,7 +6,6 @@ import {
   Container,
   Paper,
   Divider,
-  Chip,
   useTheme,
   useMediaQuery,
   CircularProgress
@@ -94,7 +93,22 @@ export default function EduTaskMap () {
       py: 4
     }}>
       <Container maxWidth="xl">
-        {/* Header Section */}
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography 
+            variant="h3" 
+            fontWeight="bold" 
+            gutterBottom
+            sx={{ 
+              background: 'linear-gradient(45deg, #667eea, #764ba2)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 2
+            }}
+          >
+            МАПА ВПРАВ
+          </Typography>
+        </Box>
         <Paper elevation={3} sx={{ 
           p: 4, 
           mb: 4, 
@@ -109,34 +123,6 @@ export default function EduTaskMap () {
             syncSchoolList={syncSchoolList}
             loadingSchools={loadingSchools}
           />
-
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography 
-              variant="h4" 
-              fontWeight="bold" 
-              gutterBottom
-              sx={{ 
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 2
-              }}
-            >
-              КЛАСТЕР ГРОМАДЯНСЬКИХ КОМПЕТЕНТНОСТЕЙ
-            </Typography>
-            <Chip 
-              label="МАПА ВПРАВ" 
-              sx={{ 
-                backgroundColor: '#fbbf24',
-                color: '#92400e',
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-                px: 3,
-                py: 1
-              }}
-            />
-          </Box>
         </Paper>
 
         {/* Competencies Section */}
@@ -149,7 +135,7 @@ export default function EduTaskMap () {
         }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h5" fontWeight="bold" color="primary">
-              Компетентності
+              Кластер громадянських компетентностей
             </Typography>
             <Button 
               variant="contained" 
