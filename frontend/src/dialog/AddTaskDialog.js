@@ -19,7 +19,7 @@ import { addTask } from '../requests/tasks'
 const detectUrl = (text) => {
   if (!text || typeof text !== 'string') return null;
   
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi;
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi;
   const matches = text.match(urlRegex);
   
   if (matches && matches.length > 0) {

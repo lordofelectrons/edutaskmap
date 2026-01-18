@@ -29,7 +29,7 @@ export async function addTask({ description, classId }, cb) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ description }),
   });
-  const data = await res.json();
+  await res.json();
   cb();
 }
 

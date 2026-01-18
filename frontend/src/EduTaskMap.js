@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from 'react'
+import { React, useState, useEffect, useCallback } from 'react'
 import {
   Typography,
   Box,
@@ -41,18 +41,21 @@ export default function EduTaskMap () {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const syncSchoolList = () => {
+  const syncSchoolList = useCallback(() => {
     setLoadingSchools(true)
     fetchSchools((data) => {
       setSchools(data)
-      if (data.length > 0 && !selectedSchool) setSelectedSchool(data[0])
+      setSelectedSchool((prev) => {
+        if (data.length > 0 && !prev) return data[0]
+        return prev
+      })
       setLoadingSchools(false)
     })
-  }
+  }, [])
 
   useEffect(() => {
     syncSchoolList();
-  }, [])
+  }, [syncSchoolList])
 
   useEffect(() => {
     if (selectedSchool) {

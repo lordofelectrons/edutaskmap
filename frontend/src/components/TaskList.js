@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { 
   Box, 
   Typography, 
   Button, 
-  List, 
-  ListItem, 
   ListItemText,
   Paper,
   Chip,
@@ -13,11 +11,9 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  CardMedia,
-  Link,
-  Avatar
+  CardMedia
 } from '@mui/material'
-import { Delete as DeleteIcon, Link as LinkIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material'
+import { Delete as DeleteIcon, Link as LinkIcon } from '@mui/icons-material'
 import { fetchTasks, deleteTask } from '../requests/tasks'
 import AddTaskDialog from '../dialog/AddTaskDialog';
 
@@ -202,7 +198,7 @@ const TaskList = ({ classId }) => {
   const [showAddForm, setShowAddForm] = useState(false)
   const [deletingTaskId, setDeletingTaskId] = useState(null)
 
-  const fetchTasksAsync = async () => {
+  const fetchTasksAsync = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -223,11 +219,11 @@ const TaskList = ({ classId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [classId]);
 
   useEffect(() => {
     fetchTasksAsync();
-  }, [classId]);
+  }, [fetchTasksAsync]);
 
   const handleTaskAdded = () => {
     fetchTasks(classId, (data) => {
