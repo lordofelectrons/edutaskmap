@@ -55,6 +55,10 @@ export default function GradeClasses({ grade, color, school }) {
         borderRadius: 3,
         overflow: 'hidden',
         transition: 'all 0.3s ease',
+        height: isMobile ? 'auto' : 'min(70vh, 600px)',
+        maxHeight: isMobile ? 'none' : 'min(70vh, 600px)',
+        display: 'flex',
+        flexDirection: 'column',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: 6
@@ -69,7 +73,8 @@ export default function GradeClasses({ grade, color, school }) {
         px: 3,
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexShrink: 0
       }}>
         <Typography variant="h6" fontWeight="bold">
           {grade} клас
@@ -85,8 +90,14 @@ export default function GradeClasses({ grade, color, school }) {
         />
       </Box>
 
-      {/* Content */}
-      <Box sx={{ p: 3 }}>
+      {/* Content - Scrollable */}
+      <Box sx={{ 
+        p: 3,
+        flex: 1,
+        minHeight: 0,
+        overflowY: isMobile ? 'visible' : 'auto',
+        overflowX: 'hidden'
+      }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
             <CircularProgress />
@@ -113,10 +124,7 @@ export default function GradeClasses({ grade, color, school }) {
             <Box sx={{ 
               display: 'flex', 
               flexDirection: 'column', 
-              gap: 2,
-              maxHeight: isMobile ? 'none' : 'min(70vh, 600px)',
-              overflowY: isMobile ? 'visible' : 'auto',
-              overflowX: 'hidden'
+              gap: 2
             }}>
               {classes.length === 0 ? (
                 <Typography 
