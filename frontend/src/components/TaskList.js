@@ -191,7 +191,7 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
   );
 };
 
-const TaskList = ({ classId, preloadedTasks = [] }) => {
+const TaskList = ({ classId, preloadedTasks = [], onDataChange }) => {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
