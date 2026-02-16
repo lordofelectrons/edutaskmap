@@ -244,6 +244,7 @@ export default function EduTaskMap () {
                 color={gradeObj.color}
                 school={selectedSchool}
                 preloadedClasses={classesByGrade[gradeObj.grade] || []}
+                onDataChange={() => selectedSchool && fetchFullSchoolData(selectedSchool.id)}
               />
             ))}
           </Box>

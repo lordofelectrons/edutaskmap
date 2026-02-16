@@ -11,9 +11,9 @@ import {
 } from '@mui/material';
 import ClassCard from './ClassCard';
 import AddClassDialog from '../dialog/AddClassDialog';
-import { fetchClassesBySchoolAndGrade, addClass } from '../requests/classes';
+import { addClass } from '../requests/classes';
 
-export default function GradeClasses({ grade, color, school, preloadedClasses = [] }) {
+export default function GradeClasses({ grade, color, school, preloadedClasses = [], onDataChange }) {
   const [classes, setClasses] = useState([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newClassName, setNewClassName] = useState('');
@@ -23,24 +23,13 @@ export default function GradeClasses({ grade, color, school, preloadedClasses = 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Use preloaded data if available, otherwise fetch
+  // Use only preloaded data
   useEffect(() => {
-    if (school) {
-      if (preloadedClasses.length > 0 || Object.keys(preloadedClasses).length === 0) {
-        // Filter preloaded classes by grade
-        const gradeClasses = preloadedClasses.filter(cls => cls.grade === grade);
-        if (gradeClasses.length > 0) {
-          setClasses(gradeClasses);
-          setLoading(false);
-          return;
-        }
-      }
-      // Fallback to fetching if no preloaded data
-      setLoading(true);
-      fetchClassesBySchoolAndGrade(school.name, grade, (data) => {
-        setClasses(data);
-        setLoading(false);
-      });
+    if (school && preloadedClasses) {
+      // Filter preloaded classes by grade
+      const gradeClasses = preloadedClasses.filter(cls => cls.grade === grade);
+      setClasses(gradeClasses);
+      setLoading(false);
     } else {
       setClasses([]);
       setLoading(false);
@@ -61,7 +50,10 @@ export default function GradeClasses({ grade, color, school, preloadedClasses = 
   };
 
   const handleClassDeleted = (deletedClassId) => {
-    setClasses(prev => prev.filter(cls => cls.id !== deletedClassId));
+    // Trigger full data refresh
+    if (onDataChange) {
+      onDataChange();
+    }
   };
 
   return (
@@ -157,6 +149,7 @@ export default function GradeClasses({ grade, color, school, preloadedClasses = 
                     classItem={cls} 
                     onClassDeleted={handleClassDeleted}
                     preloadedTasks={cls.tasks || []}
+                    onDataChange={onDataChange}
                   />
                 ))
               )}

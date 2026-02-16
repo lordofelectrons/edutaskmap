@@ -14,7 +14,7 @@ import {
   CardMedia
 } from '@mui/material'
 import { Delete as DeleteIcon, Link as LinkIcon } from '@mui/icons-material'
-import { fetchTasks, deleteTask } from '../requests/tasks'
+import { deleteTask, addTask } from '../requests/tasks'
 import AddTaskDialog from '../dialog/AddTaskDialog';
 
 // Component for rendering individual task cards
@@ -198,54 +198,23 @@ const TaskList = ({ classId, preloadedTasks = [] }) => {
   const [showAddForm, setShowAddForm] = useState(false)
   const [deletingTaskId, setDeletingTaskId] = useState(null)
 
-  const fetchTasksAsync = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      await fetchTasks(classId, (data) => {
-        // Ensure data is always an array
-        if (Array.isArray(data)) {
-          setTasks(data);
-        } else {
-          console.error('Expected array but got:', data);
-          setTasks([]);
-          setError('Invalid data format received');
-        }
-      });
-    } catch (err) {
-      console.error('Error fetching tasks:', err);
-      setError(err);
-      setTasks([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [classId]);
-
-  // Use preloaded tasks if available, otherwise fetch
+  // Use only preloaded tasks
   useEffect(() => {
-    if (preloadedTasks.length > 0) {
+    if (preloadedTasks && Array.isArray(preloadedTasks)) {
       setTasks(preloadedTasks);
       setLoading(false);
       setError(null);
-    } else if (classId) {
-      fetchTasksAsync();
     } else {
       setTasks([]);
       setLoading(false);
     }
-  }, [classId, preloadedTasks, fetchTasksAsync]);
+  }, [preloadedTasks]);
 
   const handleTaskAdded = () => {
-    // Refresh tasks after adding
-    fetchTasks(classId, (data) => {
-      // Ensure data is always an array
-      if (Array.isArray(data)) {
-        setTasks(data);
-      } else {
-        console.error('Expected array but got:', data);
-        setTasks([]);
-      }
-    });
+    // Trigger full data refresh
+    if (onDataChange) {
+      onDataChange();
+    }
     setShowAddForm(false);
   }
 
@@ -254,7 +223,10 @@ const TaskList = ({ classId, preloadedTasks = [] }) => {
       setDeletingTaskId(taskId);
       try {
         await deleteTask(taskId, (data) => {
-          setTasks(prev => prev.filter(task => task.id !== taskId));
+          // Trigger full data refresh
+          if (onDataChange) {
+            onDataChange();
+          }
         });
       } catch (error) {
         console.error('Error deleting task:', error);

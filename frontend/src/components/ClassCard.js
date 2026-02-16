@@ -5,7 +5,7 @@ import { Delete as DeleteIcon } from '@mui/icons-material';
 import TaskList from './TaskList';
 import { deleteClass } from '../requests/classes';
 
-export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = [] }) {
+export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = [], onDataChange }) {
   const [deleting, setDeleting] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -18,6 +18,10 @@ export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = 
         await deleteClass(classItem.id, (data) => {
           if (onClassDeleted) {
             onClassDeleted(classItem.id);
+          }
+          // Trigger full data refresh
+          if (onDataChange) {
+            onDataChange();
           }
         });
       } catch (error) {
@@ -111,7 +115,7 @@ export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = 
         >
           {classItem.name}
         </Typography>
-        <TaskList classId={classItem.id} preloadedTasks={preloadedTasks} />
+        <TaskList classId={classItem.id} preloadedTasks={preloadedTasks} onDataChange={onDataChange} />
       </CardContent>
     </Card>
   );
