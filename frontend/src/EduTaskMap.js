@@ -10,7 +10,7 @@ import {
   CircularProgress
 } from '@mui/material'
 import { fetchSchools } from './requests/schools.js'
-import { fetchCompetenciesBySchoolId, addCompetency } from './requests/competencies.js'
+import { addCompetency } from './requests/competencies.js'
 import { fetchSchoolFullData } from './requests/schoolFullData.js'
 import SchoolSelection from './components/SchoolSelection.js'
 import CompetencyCard from './components/CompetencyCard.js'
@@ -69,22 +69,6 @@ export default function EduTaskMap () {
         });
         setClassesByGrade(classesByGradeMap);
       }
-      setLoading(false);
-      fetchingSchoolIdRef.current = null
-    })
-  }, [])
-
-  const fetchCompetenciesForSchool = useCallback((schoolId) => {
-    // Fallback to old method if needed
-    if (fetchingSchoolIdRef.current === schoolId) return
-    fetchingSchoolIdRef.current = schoolId
-    
-    setLoading(true);
-    fetchCompetenciesBySchoolId(schoolId, (data) => {
-      setCompetencies(data.map((c, i) => ({
-        ...c,
-        color: colorPalette[i % colorPalette.length]
-      })))
       setLoading(false);
       fetchingSchoolIdRef.current = null
     })
