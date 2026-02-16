@@ -34,7 +34,7 @@ export default function ClassCard({ classItem, onClassDeleted }) {
       borderRadius: 2,
       boxShadow: 2,
       transition: 'all 0.2s ease',
-      maxHeight: isMobile ? 'none' : 'min(420px, 55vh)',
+      maxHeight: isMobile ? 'none' : 'min(500px, 60vh)',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
