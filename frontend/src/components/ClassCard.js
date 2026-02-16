@@ -5,7 +5,7 @@ import { Delete as DeleteIcon } from '@mui/icons-material';
 import TaskList from './TaskList';
 import { deleteClass } from '../requests/classes';
 
-export default function ClassCard({ classItem, onClassDeleted }) {
+export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = [] }) {
   const [deleting, setDeleting] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -111,7 +111,7 @@ export default function ClassCard({ classItem, onClassDeleted }) {
         >
           {classItem.name}
         </Typography>
-        <TaskList classId={classItem.id} />
+        <TaskList classId={classItem.id} preloadedTasks={preloadedTasks} />
       </CardContent>
     </Card>
   );

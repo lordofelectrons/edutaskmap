@@ -13,7 +13,7 @@ import ClassCard from './ClassCard';
 import AddClassDialog from '../dialog/AddClassDialog';
 import { fetchClassesBySchoolAndGrade, addClass } from '../requests/classes';
 
-export default function GradeClasses({ grade, color, school }) {
+export default function GradeClasses({ grade, color, school, preloadedClasses = [] }) {
   const [classes, setClasses] = useState([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newClassName, setNewClassName] = useState('');
@@ -23,21 +23,37 @@ export default function GradeClasses({ grade, color, school }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Use preloaded data if available, otherwise fetch
   useEffect(() => {
     if (school) {
+      if (preloadedClasses.length > 0 || Object.keys(preloadedClasses).length === 0) {
+        // Filter preloaded classes by grade
+        const gradeClasses = preloadedClasses.filter(cls => cls.grade === grade);
+        if (gradeClasses.length > 0) {
+          setClasses(gradeClasses);
+          setLoading(false);
+          return;
+        }
+      }
+      // Fallback to fetching if no preloaded data
       setLoading(true);
       fetchClassesBySchoolAndGrade(school.name, grade, (data) => {
         setClasses(data);
         setLoading(false);
       });
+    } else {
+      setClasses([]);
+      setLoading(false);
     }
-  }, [school, grade]);
+  }, [school, grade, preloadedClasses]);
 
   const handleAddClass = () => {
     if (!newClassName.trim() || !school) return;
     setAddingClass(true);
     addClass({ grade, name: newClassName, school_id: school.id }, (newCls) => {
-      setClasses(prev => [...prev, newCls]);
+      // Add new class with empty tasks array
+      const newClassWithTasks = { ...newCls, tasks: [] };
+      setClasses(prev => [...prev, newClassWithTasks]);
       setNewClassName('');
       setAddDialogOpen(false);
       setAddingClass(false);
@@ -140,6 +156,7 @@ export default function GradeClasses({ grade, color, school }) {
                     key={cls.id} 
                     classItem={cls} 
                     onClassDeleted={handleClassDeleted}
+                    preloadedTasks={cls.tasks || []}
                   />
                 ))
               )}

@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { fetchSchools } from './requests/schools.js'
 import { fetchCompetenciesBySchoolId, addCompetency } from './requests/competencies.js'
+import { fetchSchoolFullData } from './requests/schoolFullData.js'
 import SchoolSelection from './components/SchoolSelection.js'
 import CompetencyCard from './components/CompetencyCard.js'
 import AddCompetencyDialog from './dialog/AddCompetencyDialog.js'
@@ -33,6 +34,7 @@ export default function EduTaskMap () {
   const [selectedSchool, setSelectedSchool] = useState(null)
   const [schools, setSchools] = useState([])
   const [competencies, setCompetencies] = useState([])
+  const [classesByGrade, setClassesByGrade] = useState({}) // { grade: [classes with tasks] }
   const [addCompetencyDialogOpen, setAddCompetencyDialogOpen] = useState(false)
   const [newCompetencyName, setNewCompetencyName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -43,8 +45,37 @@ export default function EduTaskMap () {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const fetchCompetenciesForSchool = useCallback((schoolId) => {
+  const fetchFullSchoolData = useCallback((schoolId) => {
     // Prevent duplicate fetches
+    if (fetchingSchoolIdRef.current === schoolId) return
+    fetchingSchoolIdRef.current = schoolId
+    
+    setLoading(true);
+    fetchSchoolFullData(schoolId, (data) => {
+      if (data) {
+        // Set competencies with colors
+        setCompetencies(data.competencies.map((c, i) => ({
+          ...c,
+          color: colorPalette[i % colorPalette.length]
+        })))
+        
+        // Organize classes by grade
+        const classesByGradeMap = {};
+        data.classes.forEach(cls => {
+          if (!classesByGradeMap[cls.grade]) {
+            classesByGradeMap[cls.grade] = [];
+          }
+          classesByGradeMap[cls.grade].push(cls);
+        });
+        setClassesByGrade(classesByGradeMap);
+      }
+      setLoading(false);
+      fetchingSchoolIdRef.current = null
+    })
+  }, [])
+
+  const fetchCompetenciesForSchool = useCallback((schoolId) => {
+    // Fallback to old method if needed
     if (fetchingSchoolIdRef.current === schoolId) return
     fetchingSchoolIdRef.current = schoolId
     
@@ -74,21 +105,21 @@ export default function EduTaskMap () {
       
       setSelectedSchool((prev) => {
         // If we're setting a school and didn't have one before, 
-        // start fetching competencies immediately (don't wait for state update)
+        // start fetching full data immediately (don't wait for state update)
         if (schoolToSelect && !prev) {
-          fetchCompetenciesForSchool(schoolToSelect.id)
+          fetchFullSchoolData(schoolToSelect.id)
           return schoolToSelect
         }
         // If we have a saved school that matches, use it
         if (savedSchool && (!prev || prev.id !== savedSchool.id)) {
-          fetchCompetenciesForSchool(savedSchool.id)
+          fetchFullSchoolData(savedSchool.id)
           return savedSchool
         }
         return prev || schoolToSelect
       })
       setLoadingSchools(false)
     })
-  }, [fetchCompetenciesForSchool])
+  }, [fetchFullSchoolData])
 
   useEffect(() => {
     syncSchoolList();
@@ -96,20 +127,20 @@ export default function EduTaskMap () {
 
   useEffect(() => {
     if (selectedSchool && fetchingSchoolIdRef.current !== selectedSchool.id) {
-      fetchCompetenciesForSchool(selectedSchool.id)
+      fetchFullSchoolData(selectedSchool.id)
       // Save the selected school to localStorage
       saveSelectedSchoolId(selectedSchool.id)
     }
-  }, [selectedSchool, fetchCompetenciesForSchool])
+  }, [selectedSchool, fetchFullSchoolData])
 
   const handleAddCompetency = () => {
     if (!newCompetencyName.trim() || !selectedSchool) return
     setAddingCompetency(true)
     addCompetency({ name: newCompetencyName, school_id: selectedSchool.id }, (newComp) => {
-      setCompetencies(prev => [
-        ...prev,
-        { ...newComp, color: colorPalette[prev.length % colorPalette.length] }
-      ])
+      // Refresh full data to keep everything in sync
+      if (selectedSchool) {
+        fetchFullSchoolData(selectedSchool.id)
+      }
       setNewCompetencyName('')
       setAddCompetencyDialogOpen(false)
       setAddingCompetency(false)
@@ -228,6 +259,7 @@ export default function EduTaskMap () {
                 grade={gradeObj.grade}
                 color={gradeObj.color}
                 school={selectedSchool}
+                preloadedClasses={classesByGrade[gradeObj.grade] || []}
               />
             ))}
           </Box>

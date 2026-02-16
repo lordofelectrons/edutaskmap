@@ -191,7 +191,7 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
   );
 };
 
-const TaskList = ({ classId }) => {
+const TaskList = ({ classId, preloadedTasks = [] }) => {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -221,11 +221,22 @@ const TaskList = ({ classId }) => {
     }
   }, [classId]);
 
+  // Use preloaded tasks if available, otherwise fetch
   useEffect(() => {
-    fetchTasksAsync();
-  }, [fetchTasksAsync]);
+    if (preloadedTasks.length > 0) {
+      setTasks(preloadedTasks);
+      setLoading(false);
+      setError(null);
+    } else if (classId) {
+      fetchTasksAsync();
+    } else {
+      setTasks([]);
+      setLoading(false);
+    }
+  }, [classId, preloadedTasks, fetchTasksAsync]);
 
   const handleTaskAdded = () => {
+    // Refresh tasks after adding
     fetchTasks(classId, (data) => {
       // Ensure data is always an array
       if (Array.isArray(data)) {

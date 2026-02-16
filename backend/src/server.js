@@ -266,6 +266,81 @@ app.post('/api/schools', async (req, res) => {
   }
 });
 
+// GET full data for a school (competencies, classes with tasks)
+app.get('/api/schools/:id/full-data', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'School ID is required' });
+  }
+
+  try {
+    // Fetch school
+    const schoolResult = await executeQuery(
+      'SELECT * FROM schools WHERE id = $1',
+      [id]
+    );
+    
+    if (schoolResult.rows.length === 0) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+    
+    const school = schoolResult.rows[0];
+
+    // Fetch competencies for this school
+    const competenciesResult = await executeQuery(
+      'SELECT * FROM competencies WHERE school_id = $1 ORDER BY id',
+      [id]
+    );
+    const competencies = competenciesResult.rows;
+
+    // Fetch all classes for this school
+    const classesResult = await executeQuery(
+      'SELECT * FROM classes WHERE school_id = $1 ORDER BY grade, id',
+      [id]
+    );
+    const classes = classesResult.rows;
+
+    // Fetch all tasks for all classes of this school
+    const classIds = classes.map(cls => cls.id);
+    let tasks = [];
+    
+    if (classIds.length > 0) {
+      const placeholders = classIds.map((_, index) => `$${index + 1}`).join(',');
+      const tasksResult = await executeQuery(
+        `SELECT id, class_id, description, url, title, site_name, image_url, domain, 
+                metadata_fetched, created_at 
+         FROM tasks WHERE class_id IN (${placeholders}) ORDER BY created_at DESC`,
+        classIds
+      );
+      tasks = tasksResult.rows;
+    }
+
+    // Group tasks by class_id
+    const tasksByClassId = {};
+    tasks.forEach(task => {
+      if (!tasksByClassId[task.class_id]) {
+        tasksByClassId[task.class_id] = [];
+      }
+      tasksByClassId[task.class_id].push(task);
+    });
+
+    // Attach tasks to their respective classes
+    const classesWithTasks = classes.map(cls => ({
+      ...cls,
+      tasks: tasksByClassId[cls.id] || []
+    }));
+
+    res.json({
+      school,
+      competencies,
+      classes: classesWithTasks
+    });
+  } catch (err) {
+    console.error('Error fetching full school data:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
 // DELETE a school
 app.delete('/api/schools/:id', async (req, res) => {
   const { id } = req.params;
