@@ -3,12 +3,12 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, C
 export default function AddClassDialog({ open, onClose, onAdd, value, onChange, disabled, loading = false }) {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add New Class</DialogTitle>
+      <DialogTitle>Додати новий предмет</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           margin="dense"
-          label="Class Name"
+          label="Назва предмету"
           fullWidth
           value={value}
           onChange={onChange}
