@@ -278,7 +278,7 @@ const TaskList = ({ classId }) => {
             />
           </Box>
           
-          <Box sx={{ flex: 1, minHeight: '250px', overflowY: 'auto', overflowX: 'hidden' }}>
+          <Box sx={{ flex: 1, minHeight: '250px', maxHeight: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
             {!Array.isArray(tasks) || tasks.length === 0 ? (
               <Typography 
                 variant="body2" 

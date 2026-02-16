@@ -34,6 +34,7 @@ export default function ClassCard({ classItem, onClassDeleted }) {
       borderRadius: 2,
       boxShadow: 2,
       transition: 'all 0.2s ease',
+      height: isMobile ? 'auto' : 'min(500px, 60vh)',
       maxHeight: isMobile ? 'none' : 'min(500px, 60vh)',
       display: 'flex',
       flexDirection: 'column',
@@ -90,7 +91,7 @@ export default function ClassCard({ classItem, onClassDeleted }) {
           </Tooltip>
         </Box>
       </Box>
-      <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, overflow: 'hidden' }}>
         <Typography 
           variant="h6" 
           fontWeight="bold" 
@@ -103,7 +104,7 @@ export default function ClassCard({ classItem, onClassDeleted }) {
         >
           {classItem.name}
         </Typography>
-        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <TaskList classId={classItem.id} />
         </Box>
       </CardContent>
