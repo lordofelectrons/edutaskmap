@@ -15,6 +15,7 @@ import SchoolSelection from './components/SchoolSelection.js'
 import CompetencyCard from './components/CompetencyCard.js'
 import AddCompetencyDialog from './dialog/AddCompetencyDialog.js'
 import GradeClasses from './components/GradeClasses'
+import { saveSelectedSchoolId, getSavedSchoolId } from './utils/schoolStorage.js'
 
 const grades = [
   { grade: 5, color: '#ef4444' },
@@ -62,15 +63,28 @@ export default function EduTaskMap () {
     setLoadingSchools(true)
     fetchSchools((data) => {
       setSchools(data)
-      const firstSchool = data.length > 0 ? data[0] : null
+      
+      // Try to restore saved school from localStorage
+      const savedSchoolId = getSavedSchoolId()
+      const savedSchool = savedSchoolId 
+        ? data.find(school => school.id === savedSchoolId) 
+        : null
+      
+      const schoolToSelect = savedSchool || (data.length > 0 ? data[0] : null)
+      
       setSelectedSchool((prev) => {
-        // If we're setting the first school and didn't have one before, 
+        // If we're setting a school and didn't have one before, 
         // start fetching competencies immediately (don't wait for state update)
-        if (firstSchool && !prev) {
-          fetchCompetenciesForSchool(firstSchool.id)
-          return firstSchool
+        if (schoolToSelect && !prev) {
+          fetchCompetenciesForSchool(schoolToSelect.id)
+          return schoolToSelect
         }
-        return prev || firstSchool
+        // If we have a saved school that matches, use it
+        if (savedSchool && (!prev || prev.id !== savedSchool.id)) {
+          fetchCompetenciesForSchool(savedSchool.id)
+          return savedSchool
+        }
+        return prev || schoolToSelect
       })
       setLoadingSchools(false)
     })
@@ -83,6 +97,8 @@ export default function EduTaskMap () {
   useEffect(() => {
     if (selectedSchool && fetchingSchoolIdRef.current !== selectedSchool.id) {
       fetchCompetenciesForSchool(selectedSchool.id)
+      // Save the selected school to localStorage
+      saveSelectedSchoolId(selectedSchool.id)
     }
   }, [selectedSchool, fetchCompetenciesForSchool])
 

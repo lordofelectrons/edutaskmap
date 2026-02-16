@@ -7,6 +7,7 @@ import {
   Avatar
 } from '@mui/material';
 import SchoolDrawer from './SchoolDrawer';
+import { clearSavedSchoolId } from '../utils/schoolStorage.js';
 
 export default function SchoolSelection ({ schools, selectedSchool, setSelectedSchool, syncSchoolList, loadingSchools = false }) {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -29,6 +30,7 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
     const handleSchoolDeleted = (deletedSchoolId) => {
         if (selectedSchool && selectedSchool.id === deletedSchoolId) {
             setSelectedSchool(null);
+            clearSavedSchoolId();
         }
         syncSchoolList();
     }
