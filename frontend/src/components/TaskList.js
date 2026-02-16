@@ -255,7 +255,7 @@ const TaskList = ({ classId }) => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
+    <Box>
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
           <CircularProgress />
@@ -266,7 +266,7 @@ const TaskList = ({ classId }) => {
         </Typography>
       ) : (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle2" fontWeight="bold" color="primary">
               Завдання
             </Typography>
@@ -278,32 +278,30 @@ const TaskList = ({ classId }) => {
             />
           </Box>
           
-          <Box sx={{ flex: 1, minHeight: '250px', maxHeight: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
-            {!Array.isArray(tasks) || tasks.length === 0 ? (
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
-                sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}
-              >
-                Поки що немає завдань
-              </Typography>
-            ) : (
-              <Box sx={{ mt: 1 }}>
-                {tasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onDelete={handleDeleteTask}
-                    isDeleting={deletingTaskId === task.id}
-                  />
-                ))}
-              </Box>
-            )}
-          </Box>
+          {!Array.isArray(tasks) || tasks.length === 0 ? (
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}
+            >
+              Поки що немає завдань
+            </Typography>
+          ) : (
+            <Box sx={{ mt: 1 }}>
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onDelete={handleDeleteTask}
+                  isDeleting={deletingTaskId === task.id}
+                />
+              ))}
+            </Box>
+          )}
         </>
       )}
       
-      <Box sx={{ flexShrink: 0, pt: 2 }}>
+      <Box sx={{ pt: 2 }}>
         {showAddForm ? (
           <>
             <AddTaskDialog classId={classId} onTaskAdded={handleTaskAdded} />
