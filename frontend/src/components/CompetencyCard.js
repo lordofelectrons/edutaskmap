@@ -59,7 +59,7 @@ export default function CompetencyCard({ competency, onCompetencyDeleted }) {
         }}
       >
         <Typography variant="h6" fontWeight="bold">
-          Компетентність {competency.id}
+          Компетентність
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Chip 
