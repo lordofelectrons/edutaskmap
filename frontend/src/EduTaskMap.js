@@ -151,7 +151,7 @@ export default function EduTaskMap () {
               background: 'linear-gradient(45deg, #667eea, #764ba2)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              WebkitTextFillColor: 'white',
               mb: 2
             }}
           >
