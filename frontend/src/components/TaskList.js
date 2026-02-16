@@ -255,7 +255,7 @@ const TaskList = ({ classId }) => {
   }
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
           <CircularProgress />
@@ -266,7 +266,7 @@ const TaskList = ({ classId }) => {
         </Typography>
       ) : (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexShrink: 0 }}>
             <Typography variant="subtitle2" fontWeight="bold" color="primary">
               Завдання
             </Typography>
@@ -278,58 +278,61 @@ const TaskList = ({ classId }) => {
             />
           </Box>
           
-          {!Array.isArray(tasks) || tasks.length === 0 ? (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}
-            >
-              Поки що немає завдань
-            </Typography>
-          ) : (
-            <Box sx={{ mt: 1 }}>
-              {tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDeleteTask}
-                  isDeleting={deletingTaskId === task.id}
-                />
-              ))}
-            </Box>
-          )}
+          <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+            {!Array.isArray(tasks) || tasks.length === 0 ? (
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}
+              >
+                Поки що немає завдань
+              </Typography>
+            ) : (
+              <Box sx={{ mt: 1 }}>
+                {tasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onDelete={handleDeleteTask}
+                    isDeleting={deletingTaskId === task.id}
+                  />
+                ))}
+              </Box>
+            )}
+          </Box>
         </>
       )}
       
-      {showAddForm ? (
-        <>
-          <AddTaskDialog classId={classId} onTaskAdded={handleTaskAdded} />
+      <Box sx={{ flexShrink: 0, pt: 2 }}>
+        {showAddForm ? (
+          <>
+            <AddTaskDialog classId={classId} onTaskAdded={handleTaskAdded} />
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setShowAddForm(false)}
+              sx={{ width: '100%' }}
+            >
+              Скасувати
+            </Button>
+          </>
+        ) : (
           <Button
-            variant="outlined"
+            variant="contained"
             size="small"
-            onClick={() => setShowAddForm(false)}
-            sx={{ mt: 1, width: '100%' }}
+            onClick={() => setShowAddForm(true)}
+            sx={{ 
+              width: '100%',
+              background: 'linear-gradient(45deg, #10b981, #059669)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #059669, #047857)'
+              }
+            }}
           >
-            Скасувати
+            Додати завдання
           </Button>
-        </>
-      ) : (
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => setShowAddForm(true)}
-          sx={{ 
-            mt: 2, 
-            width: '100%',
-            background: 'linear-gradient(45deg, #10b981, #059669)',
-            '&:hover': {
-              background: 'linear-gradient(45deg, #059669, #047857)'
-            }
-          }}
-        >
-          Додати завдання
-        </Button>
-      )}
+        )}
+      </Box>
     </Box>
   )
 }

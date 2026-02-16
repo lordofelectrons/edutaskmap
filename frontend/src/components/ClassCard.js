@@ -1,12 +1,14 @@
 // frontend/src/components/ClassCard.js
 import { useState } from 'react';
-import { Card, CardContent, Typography, Box, Chip, IconButton, Tooltip, CircularProgress } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip, IconButton, Tooltip, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import TaskList from './TaskList';
 import { deleteClass } from '../requests/classes';
 
 export default function ClassCard({ classItem, onClassDeleted }) {
   const [deleting, setDeleting] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleDelete = async (event) => {
     event.stopPropagation();
@@ -32,6 +34,10 @@ export default function ClassCard({ classItem, onClassDeleted }) {
       borderRadius: 2,
       boxShadow: 2,
       transition: 'all 0.2s ease',
+      maxHeight: isMobile ? 'none' : 'min(420px, 55vh)',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
       '&:hover': {
         boxShadow: 4,
         transform: 'translateY(-2px)'
@@ -84,19 +90,22 @@ export default function ClassCard({ classItem, onClassDeleted }) {
           </Tooltip>
         </Box>
       </Box>
-      <CardContent sx={{ p: 2 }}>
+      <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Typography 
           variant="h6" 
           fontWeight="bold" 
           sx={{ 
             mb: 2,
             color: '#1f2937',
-            fontSize: '1.1rem'
+            fontSize: '1.1rem',
+            flexShrink: 0
           }}
         >
           {classItem.name}
         </Typography>
-        <TaskList classId={classItem.id} />
+        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <TaskList classId={classItem.id} />
+        </Box>
       </CardContent>
     </Card>
   );

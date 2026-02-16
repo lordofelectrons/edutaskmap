@@ -114,8 +114,9 @@ export default function GradeClasses({ grade, color, school }) {
               display: 'flex', 
               flexDirection: 'column', 
               gap: 2,
-              maxHeight: isMobile ? 'auto' : '400px',
-              overflowY: isMobile ? 'visible' : 'auto'
+              maxHeight: isMobile ? 'none' : 'min(70vh, 600px)',
+              overflowY: isMobile ? 'visible' : 'auto',
+              overflowX: 'hidden'
             }}>
               {classes.length === 0 ? (
                 <Typography 
