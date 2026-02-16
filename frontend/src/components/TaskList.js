@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import { 
   Box, 
   Typography, 
@@ -14,7 +14,7 @@ import {
   CardMedia
 } from '@mui/material'
 import { Delete as DeleteIcon, Link as LinkIcon } from '@mui/icons-material'
-import { deleteTask, addTask } from '../requests/tasks'
+import { deleteTask } from '../requests/tasks'
 import AddTaskDialog from '../dialog/AddTaskDialog';
 
 // Component for rendering individual task cards
