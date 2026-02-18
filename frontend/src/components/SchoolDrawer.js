@@ -55,11 +55,16 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
       PaperProps={{
         sx: {
           width: 320,
+          height: '100vh',
+          maxHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
         }
       }}
     >
-      <Box sx={{ p: 3, color: 'white' }}>
+      <Box sx={{ p: 3, color: 'white', flexShrink: 0 }}>
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
           Шкільні команди
         </Typography>
@@ -70,7 +75,9 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
       
       <Box sx={{ 
         background: 'rgba(255, 255, 255, 0.95)',
-        height: '100%',
+        flex: 1,
+        minHeight: 0,
+        overflow: 'auto',
         borderRadius: '20px 0 0 0'
       }}>
         {loadingSchools ? (
