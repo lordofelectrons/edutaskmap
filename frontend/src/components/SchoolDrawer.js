@@ -54,7 +54,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
       onClose={() => handleSchoolSelect(false)}
       PaperProps={{
         sx: {
-          width: 320,
+          width: '40vw',
           height: '100vh',
           maxHeight: '100vh',
           display: 'flex',
