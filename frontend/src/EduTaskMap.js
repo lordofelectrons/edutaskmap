@@ -19,6 +19,10 @@ import GradeClasses from './components/GradeClasses'
 import { saveSelectedSchoolId, getSavedSchoolId } from './utils/schoolStorage.js'
 
 const grades = [
+  { grade: 1, color: '#dc2626' },
+  { grade: 2, color: '#ea580c' },
+  { grade: 3, color: '#ca8a04' },
+  { grade: 4, color: '#16a34a' },
   { grade: 5, color: '#ef4444' },
   { grade: 6, color: '#f97316' },
   { grade: 7, color: '#eab308' },
@@ -28,7 +32,7 @@ const grades = [
   { grade: 11, color: '#ec4899' },
 ];
 
-const colorPalette = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
+const colorPalette = ['#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
 
 export default function EduTaskMap () {
   const [selectedSchool, setSelectedSchool] = useState(null)

@@ -150,7 +150,7 @@ const initializeDatabase = async () => {
     )`,
     `CREATE TABLE IF NOT EXISTS classes (
       id SERIAL PRIMARY KEY,
-      grade INTEGER NOT NULL CHECK (grade >= 5 AND grade <= 11),
+      grade INTEGER NOT NULL CHECK (grade >= 1 AND grade <= 11),
       name TEXT NOT NULL,
       school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE
     )`,
@@ -448,8 +448,8 @@ app.post('/api/classes', async (req, res) => {
   if (!grade || !name || !school_id) {
     return res.status(400).json({ error: 'Grade, name, and school_id are required' });
   }
-  if (grade < 5 || grade > 11) {
-    return res.status(400).json({ error: 'Grade must be between 5 and 11' });
+  if (grade < 1 || grade > 11) {
+    return res.status(400).json({ error: 'Grade must be between 1 and 11' });
   }
 
   try {
