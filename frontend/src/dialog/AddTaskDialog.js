@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   Button,
   Box,
   CircularProgress,
   Typography,
   Paper,
   Chip,
-  Link as MuiLink
+  Link as MuiLink,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material'
 import { Link as LinkIcon } from '@mui/icons-material'
 import { addTask } from '../requests/tasks'
@@ -36,6 +38,7 @@ const detectUrl = (text) => {
 
 const AddTaskDialog = ({ classId, onTaskAdded }) => {
   const [description, setDescription] = useState('')
+  const [surnameConfirmed, setSurnameConfirmed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [detectedUrl, setDetectedUrl] = useState(null)
 
@@ -106,29 +109,29 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
                 <LinkIcon fontSize="small" />
                 Знайдено посилання:
               </Typography>
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: 2, 
+              <Paper
+                elevation={1}
+                sx={{
+                  p: 2,
                   borderRadius: 2,
                   border: '1px solid #e5e7eb',
                   backgroundColor: '#f9fafb'
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Chip 
-                    label="Автоматичне розпізнавання" 
-                    size="small" 
-                    color="primary" 
+                  <Chip
+                    label="Автоматичне розпізнавання"
+                    size="small"
+                    color="primary"
                     variant="outlined"
                     sx={{ fontSize: '0.75rem' }}
                   />
                 </Box>
-                <MuiLink 
-                  href={detectedUrl} 
-                  target="_blank" 
+                <MuiLink
+                  href={detectedUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ 
+                  sx={{
                     wordBreak: 'break-all',
                     fontSize: '0.85rem',
                     color: 'primary.main'
@@ -140,6 +143,18 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
                   Після збереження система автоматично отримає заголовок, опис та зображення з цього посилання.
                 </Typography>
               </Paper>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={surnameConfirmed}
+                    onChange={(e) => setSurnameConfirmed(e.target.checked)}
+                    color="success"
+                  />
+                }
+                label="Я додав(ла) своє прізвище до документа"
+                sx={{ mt: 1.5 }}
+              />
             </Box>
           )}
         </DialogContent>
@@ -153,7 +168,7 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
           </Button>
           <Button 
             type="submit" 
-            disabled={isSubmitting || !description.trim()}
+            disabled={isSubmitting || !description.trim() || (detectedUrl && !surnameConfirmed)}
             variant="contained"
             startIcon={isSubmitting ? <CircularProgress size={16} /> : null}
             sx={{
