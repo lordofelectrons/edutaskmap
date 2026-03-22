@@ -331,7 +331,11 @@ export default function EduTaskMap () {
             Класи та предмети
           </Typography>
 
-          {gradeGroups.map((group) => (
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress sx={{ color: t.accentPrimary }} />
+            </Box>
+          ) : gradeGroups.map((group) => (
             <Accordion
               key={group.label}
               defaultExpanded
