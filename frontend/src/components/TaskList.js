@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { 
-  Box, 
-  Typography, 
-  Button, 
+import React, { useState } from 'react'
+import {
+  Box,
+  Typography,
+  Button,
   ListItemText,
   Paper,
   Chip,
@@ -16,8 +16,8 @@ import {
 import { Delete as DeleteIcon, Link as LinkIcon } from '@mui/icons-material'
 import { deleteTask } from '../requests/tasks'
 import AddTaskDialog from '../dialog/AddTaskDialog';
+import ConfirmDialog from '../dialog/ConfirmDialog';
 
-// Component for rendering individual task cards
 const TaskCard = ({ task, onDelete, isDeleting }) => {
   const hasMetadata = task.url && task.metadata_fetched;
   const hasImage = hasMetadata && task.image_url;
@@ -30,15 +30,18 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
 
   if (hasMetadata) {
     return (
-      <Card 
-        sx={{ 
-          mb: 1, 
+      <Card
+        sx={{
+          mb: 1,
           cursor: task.url ? 'pointer' : 'default',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           '&:hover': task.url ? {
             boxShadow: 3,
             transform: 'translateY(-1px)',
-            transition: 'all 0.2s ease-in-out'
-          } : {}
+            '& .delete-btn': { opacity: 1 }
+          } : {
+            '& .delete-btn': { opacity: 1 }
+          }
         }}
         onClick={handleLinkClick}
       >
@@ -47,9 +50,9 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
             {hasImage && (
               <CardMedia
                 component="img"
-                sx={{ 
-                  width: 80, 
-                  height: 80, 
+                sx={{
+                  width: 80,
+                  height: 80,
                   borderRadius: 1,
                   objectFit: 'cover'
                 }}
@@ -63,9 +66,9 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
+                  <Typography
+                    variant="h6"
+                    sx={{
                       fontSize: '0.95rem',
                       fontWeight: 600,
                       color: '#1f2937',
@@ -80,8 +83,8 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                     {task.title || task.description}
                   </Typography>
                   {task.title && task.description !== task.title && (
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       color="text.secondary"
                       sx={{
                         fontSize: '0.85rem',
@@ -97,11 +100,11 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                   )}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                     {task.site_name && (
-                      <Chip 
-                        label={task.site_name} 
-                        size="small" 
+                      <Chip
+                        label={task.site_name}
+                        size="small"
                         variant="outlined"
-                        sx={{ 
+                        sx={{
                           fontSize: '0.75rem',
                           height: 20,
                           '& .MuiChip-label': { px: 1 }
@@ -113,6 +116,7 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                 </Box>
                 <Tooltip title="Видалити завдання">
                   <IconButton
+                    className="delete-btn"
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -120,6 +124,8 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                     }}
                     disabled={isDeleting}
                     sx={{
+                      opacity: 0,
+                      transition: 'opacity 0.2s ease',
                       color: 'error.main',
                       '&:hover': {
                         backgroundColor: 'error.light',
@@ -142,18 +148,18 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
     );
   }
 
-  // Fallback for tasks without metadata
   return (
-    <Paper 
-      elevation={1} 
-      sx={{ 
-        p: 2, 
+    <Paper
+      elevation={1}
+      sx={{
+        p: 2,
         mb: 1,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         '&:hover': {
-          backgroundColor: '#f9fafb'
+          backgroundColor: '#f9fafb',
+          '& .delete-btn': { opacity: 1 }
         }
       }}
     >
@@ -169,10 +175,13 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
       />
       <Tooltip title="Видалити завдання">
         <IconButton
+          className="delete-btn"
           size="small"
           onClick={() => onDelete(task.id)}
           disabled={isDeleting}
           sx={{
+            opacity: 0,
+            transition: 'opacity 0.2s ease',
             color: 'error.main',
             '&:hover': {
               backgroundColor: 'error.light',
@@ -192,98 +201,65 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
 };
 
 const TaskList = ({ classId, preloadedTasks = [], onDataChange }) => {
-  const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const tasks = Array.isArray(preloadedTasks) ? preloadedTasks : []
   const [showAddForm, setShowAddForm] = useState(false)
   const [deletingTaskId, setDeletingTaskId] = useState(null)
-
-  // Use only preloaded tasks
-  useEffect(() => {
-    if (preloadedTasks && Array.isArray(preloadedTasks)) {
-      setTasks(preloadedTasks);
-      setLoading(false);
-      setError(null);
-    } else {
-      setTasks([]);
-      setLoading(false);
-    }
-  }, [preloadedTasks]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   const handleTaskAdded = () => {
-    // Trigger full data refresh
-    if (onDataChange) {
-      onDataChange();
-    }
+    if (onDataChange) onDataChange();
     setShowAddForm(false);
   }
 
-  const handleDeleteTask = async (taskId) => {
-    if (window.confirm('Ви впевнені, що хочете видалити це завдання?')) {
-      setDeletingTaskId(taskId);
-      try {
-        await deleteTask(taskId, (data) => {
-          // Trigger full data refresh
-          if (onDataChange) {
-            onDataChange();
-          }
-        });
-      } catch (error) {
-        console.error('Error deleting task:', error);
-        alert('Помилка при видаленні завдання');
-      } finally {
-        setDeletingTaskId(null);
-      }
+  const handleDeleteTask = async () => {
+    const taskId = confirmDeleteId;
+    setConfirmDeleteId(null);
+    setDeletingTaskId(taskId);
+    try {
+      await deleteTask(taskId);
+      if (onDataChange) onDataChange();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    } finally {
+      setDeletingTaskId(null);
     }
   }
 
   return (
     <Box>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Typography variant="body2" color="error" sx={{ textAlign: 'center', py: 2 }}>
-          Завдання не знайдені!
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="subtitle2" fontWeight="bold" color="primary">
+          Завдання
+        </Typography>
+        <Chip
+          label={`${tasks.length} завдань`}
+          size="small"
+          color="primary"
+          variant="outlined"
+        />
+      </Box>
+
+      {tasks.length === 0 ? (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}
+        >
+          Поки що немає завдань
         </Typography>
       ) : (
-        <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="subtitle2" fontWeight="bold" color="primary">
-              Завдання
-            </Typography>
-            <Chip 
-              label={`${Array.isArray(tasks) ? tasks.length : 0} завдань`}
-              size="small"
-              color="primary"
-              variant="outlined"
+        <Box sx={{ mt: 1 }}>
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onDelete={(id) => setConfirmDeleteId(id)}
+              isDeleting={deletingTaskId === task.id}
             />
-          </Box>
-          
-          {!Array.isArray(tasks) || tasks.length === 0 ? (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}
-            >
-              Поки що немає завдань
-            </Typography>
-          ) : (
-            <Box sx={{ mt: 1 }}>
-              {tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDeleteTask}
-                  isDeleting={deletingTaskId === task.id}
-                />
-              ))}
-            </Box>
-          )}
-        </>
+          ))}
+        </Box>
       )}
-      
+
       <Box sx={{ pt: 2 }}>
         {showAddForm ? (
           <>
@@ -299,21 +275,23 @@ const TaskList = ({ classId, preloadedTasks = [], onDataChange }) => {
           </>
         ) : (
           <Button
-            variant="contained"
+            variant="outlined"
             size="small"
             onClick={() => setShowAddForm(true)}
-            sx={{ 
-              width: '100%',
-              background: 'linear-gradient(45deg, #10b981, #059669)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #059669, #047857)'
-              }
-            }}
+            sx={{ width: '100%' }}
           >
             Додати завдання
           </Button>
         )}
       </Box>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        title="Видалити завдання"
+        message="Ви впевнені, що хочете видалити це завдання?"
+        onConfirm={handleDeleteTask}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </Box>
   )
 }

@@ -5,10 +5,14 @@ import {
   Button,
   Container,
   Paper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   useTheme,
   useMediaQuery,
   CircularProgress
 } from '@mui/material'
+import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material'
 import { fetchSchools } from './requests/schools.js'
 import { addCompetency } from './requests/competencies.js'
 import { fetchSchoolFullData } from './requests/schoolFullData.js'
@@ -17,6 +21,8 @@ import CompetencyCard from './components/CompetencyCard.js'
 import AddCompetencyDialog from './dialog/AddCompetencyDialog.js'
 import GradeClasses from './components/GradeClasses'
 import { saveSelectedSchoolId, getSavedSchoolId } from './utils/schoolStorage.js'
+
+const EMPTY_CLASSES = [];
 
 const grades = [
   { grade: 1, color: '#dc2626' },
@@ -34,79 +40,106 @@ const grades = [
 
 const colorPalette = ['#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
 
+const gradeGroups = [
+  { label: 'Початкова школа (1-4)', grades: [1, 2, 3, 4] },
+  { label: 'Основна школа (5-9)', grades: [5, 6, 7, 8, 9] },
+  { label: 'Старша школа (10-11)', grades: [10, 11] },
+];
+
+const gradeColorMap = Object.fromEntries(grades.map(g => [g.grade, g.color]));
+
 export default function EduTaskMap () {
   const [selectedSchool, setSelectedSchool] = useState(null)
   const [schools, setSchools] = useState([])
   const [competencies, setCompetencies] = useState([])
-  const [classesByGrade, setClassesByGrade] = useState({}) // { grade: [classes with tasks] }
+  const [classesByGrade, setClassesByGrade] = useState({})
   const [addCompetencyDialogOpen, setAddCompetencyDialogOpen] = useState(false)
   const [newCompetencyName, setNewCompetencyName] = useState('')
   const [loading, setLoading] = useState(false)
   const [addingCompetency, setAddingCompetency] = useState(false)
   const [loadingSchools, setLoadingSchools] = useState(true)
-  const fetchingSchoolIdRef = useRef(null)
+  const abortControllerRef = useRef(null)
+  const schoolDataCacheRef = useRef({})
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const fetchFullSchoolData = useCallback((schoolId) => {
-    // Prevent duplicate fetches
-    if (fetchingSchoolIdRef.current === schoolId) return
-    fetchingSchoolIdRef.current = schoolId
-    
-    setLoading(true);
-    fetchSchoolFullData(schoolId, (data) => {
-      if (data) {
-        // Set competencies with colors
-        setCompetencies(data.competencies.map((c, i) => ({
-          ...c,
-          color: colorPalette[i % colorPalette.length]
-        })))
-        
-        // Organize classes by grade
-        const classesByGradeMap = {};
-        data.classes.forEach(cls => {
-          if (!classesByGradeMap[cls.grade]) {
-            classesByGradeMap[cls.grade] = [];
-          }
-          classesByGradeMap[cls.grade].push(cls);
-        });
-        setClassesByGrade(classesByGradeMap);
+  const applySchoolData = useCallback((data) => {
+    setCompetencies(data.competencies.map((c, i) => ({
+      ...c,
+      color: colorPalette[i % colorPalette.length]
+    })))
+
+    const classesByGradeMap = {};
+    data.classes.forEach(cls => {
+      if (!classesByGradeMap[cls.grade]) {
+        classesByGradeMap[cls.grade] = [];
       }
-      setLoading(false);
-      fetchingSchoolIdRef.current = null
-    })
+      classesByGradeMap[cls.grade].push(cls);
+    });
+    setClassesByGrade(classesByGradeMap);
   }, [])
 
-  const syncSchoolList = useCallback(() => {
+  const fetchFullSchoolData = useCallback(async (schoolId) => {
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Show cached data immediately if available
+    const cached = schoolDataCacheRef.current[schoolId];
+    if (cached) {
+      applySchoolData(cached);
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setLoading(!cached); // Only show loading spinner if no cache
+    try {
+      const data = await fetchSchoolFullData(schoolId, { signal: controller.signal });
+      // Cache the result
+      schoolDataCacheRef.current[schoolId] = data;
+      applySchoolData(data);
+    } catch (err) {
+      if (err.name === 'AbortError') return; // Cancelled, ignore
+      console.error('Error fetching school data:', err);
+    } finally {
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
+    }
+  }, [applySchoolData])
+
+  const syncSchoolList = useCallback(async () => {
     setLoadingSchools(true)
-    fetchSchools((data) => {
+    try {
+      const data = await fetchSchools();
       setSchools(data)
-      
-      // Try to restore saved school from localStorage
+
       const savedSchoolId = getSavedSchoolId()
-      const savedSchool = savedSchoolId 
-        ? data.find(school => school.id === savedSchoolId) 
+      const savedSchool = savedSchoolId
+        ? data.find(school => school.id === savedSchoolId)
         : null
-      
+
       const schoolToSelect = savedSchool || (data.length > 0 ? data[0] : null)
-      
+
       setSelectedSchool((prev) => {
-        // If we're setting a school and didn't have one before, 
-        // start fetching full data immediately (don't wait for state update)
         if (schoolToSelect && !prev) {
           fetchFullSchoolData(schoolToSelect.id)
           return schoolToSelect
         }
-        // If we have a saved school that matches, use it
         if (savedSchool && (!prev || prev.id !== savedSchool.id)) {
           fetchFullSchoolData(savedSchool.id)
           return savedSchool
         }
         return prev || schoolToSelect
       })
+    } catch (err) {
+      console.error('Error fetching schools:', err);
+    } finally {
       setLoadingSchools(false)
-    })
+    }
   }, [fetchFullSchoolData])
 
   useEffect(() => {
@@ -114,25 +147,33 @@ export default function EduTaskMap () {
   }, [syncSchoolList])
 
   useEffect(() => {
-    if (selectedSchool && fetchingSchoolIdRef.current !== selectedSchool.id) {
+    if (selectedSchool) {
       fetchFullSchoolData(selectedSchool.id)
-      // Save the selected school to localStorage
       saveSelectedSchoolId(selectedSchool.id)
     }
   }, [selectedSchool, fetchFullSchoolData])
 
-  const handleAddCompetency = () => {
+  // Invalidate cache on mutation
+  const handleDataChange = useCallback(() => {
+    if (selectedSchool) {
+      delete schoolDataCacheRef.current[selectedSchool.id];
+      fetchFullSchoolData(selectedSchool.id);
+    }
+  }, [selectedSchool, fetchFullSchoolData])
+
+  const handleAddCompetency = async () => {
     if (!newCompetencyName.trim() || !selectedSchool) return
     setAddingCompetency(true)
-    addCompetency({ name: newCompetencyName, school_id: selectedSchool.id }, (newComp) => {
-      // Refresh full data to keep everything in sync
-      if (selectedSchool) {
-        fetchFullSchoolData(selectedSchool.id)
-      }
+    try {
+      await addCompetency({ name: newCompetencyName, school_id: selectedSchool.id });
+      handleDataChange();
       setNewCompetencyName('')
       setAddCompetencyDialogOpen(false)
+    } catch (err) {
+      console.error('Error adding competency:', err);
+    } finally {
       setAddingCompetency(false)
-    })
+    }
   }
 
   const handleCompetencyDeleted = (deletedCompetencyId) => {
@@ -140,48 +181,45 @@ export default function EduTaskMap () {
   }
 
   return (
-    <Box sx={{ 
+    <Box sx={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       py: 4
     }}>
       <Container maxWidth="xl">
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography 
-            variant="h3" 
-            fontWeight="bold" 
+          <Typography
+            variant="h3"
+            fontWeight="bold"
             gutterBottom
-            sx={{ 
-              background: 'linear-gradient(45deg, #667eea, #764ba2)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'white',
+            sx={{
+              color: 'white',
               mb: 2
             }}
           >
             МАПА ВПРАВ
           </Typography>
         </Box>
-        <Paper elevation={3} sx={{ 
-          p: 4, 
-          mb: 4, 
+        <Paper elevation={3} sx={{
+          p: 4,
+          mb: 4,
           borderRadius: 3,
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)'
         }}>
-          <SchoolSelection 
-            schools={schools} 
-            selectedSchool={selectedSchool} 
-            setSelectedSchool={setSelectedSchool} 
+          <SchoolSelection
+            schools={schools}
+            selectedSchool={selectedSchool}
+            setSelectedSchool={setSelectedSchool}
             syncSchoolList={syncSchoolList}
             loadingSchools={loadingSchools}
           />
         </Paper>
 
         {/* Competencies Section */}
-        <Paper elevation={3} sx={{ 
-          p: 4, 
-          mb: 4, 
+        <Paper elevation={3} sx={{
+          p: 4,
+          mb: 4,
           borderRadius: 3,
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)'
@@ -190,10 +228,10 @@ export default function EduTaskMap () {
             <Typography variant="h5" fontWeight="bold" color="primary">
               Кластер громадянських компетентностей
             </Typography>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={() => setAddCompetencyDialogOpen(true)}
-              sx={{ 
+              sx={{
                 background: 'linear-gradient(45deg, #667eea, #764ba2)',
                 '&:hover': {
                   background: 'linear-gradient(45deg, #5a67d8, #6b46c1)'
@@ -209,14 +247,14 @@ export default function EduTaskMap () {
               <CircularProgress />
             </Box>
           ) : (
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', 
-              gap: 3 
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 3
             }}>
               {competencies.map(comp => (
-                <CompetencyCard 
-                  key={comp.id} 
+                <CompetencyCard
+                  key={comp.id}
                   competency={comp}
                   onCompetencyDeleted={handleCompetencyDeleted}
                 />
@@ -226,8 +264,8 @@ export default function EduTaskMap () {
         </Paper>
 
         {/* Grades Section */}
-        <Paper elevation={3} sx={{ 
-          p: 4, 
+        <Paper elevation={3} sx={{
+          p: 4,
           borderRadius: 3,
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)'
@@ -235,23 +273,51 @@ export default function EduTaskMap () {
           <Typography variant="h5" fontWeight="bold" color="primary" sx={{ mb: 3 }}>
             Класи та предмети
           </Typography>
-          
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: 3 
-          }}>
-            {grades.map((gradeObj, idx) => (
-              <GradeClasses
-                key={gradeObj.grade}
-                grade={gradeObj.grade}
-                color={gradeObj.color}
-                school={selectedSchool}
-                preloadedClasses={classesByGrade[gradeObj.grade] || []}
-                onDataChange={() => selectedSchool && fetchFullSchoolData(selectedSchool.id)}
-              />
-            ))}
-          </Box>
+
+          {gradeGroups.map((group) => (
+            <Accordion
+              key={group.label}
+              defaultExpanded
+              disableGutters
+              sx={{
+                boxShadow: 'none',
+                '&:before': { display: 'none' },
+                background: 'transparent',
+                mb: 2
+              }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{
+                  px: 0,
+                  minHeight: 'auto',
+                  '& .MuiAccordionSummary-content': { my: 1 }
+                }}
+              >
+                <Typography variant="h6" fontWeight="bold" color="text.secondary">
+                  {group.label}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ px: 0, pb: 2 }}>
+                <Box sx={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: 3
+                }}>
+                  {group.grades.map((gradeNum) => (
+                    <GradeClasses
+                      key={gradeNum}
+                      grade={gradeNum}
+                      color={gradeColorMap[gradeNum]}
+                      school={selectedSchool}
+                      preloadedClasses={classesByGrade[gradeNum] || EMPTY_CLASSES}
+                      onDataChange={handleDataChange}
+                    />
+                  ))}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          ))}
         </Paper>
 
         <AddCompetencyDialog

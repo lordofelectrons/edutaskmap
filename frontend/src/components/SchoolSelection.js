@@ -1,9 +1,8 @@
 import { React, useState } from 'react';
-import { 
+import {
   Typography,
   Box,
   Button,
-  Chip,
   Avatar
 } from '@mui/material';
 import SchoolDrawer from './SchoolDrawer';
@@ -17,6 +16,12 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
             setSelectedSchool(school);
         }
         setDrawerOpen(false);
+    };
+
+    const handleSchoolAdded = (school) => {
+        setSelectedSchool(school);
+        setDrawerOpen(false);
+        syncSchoolList();
     };
 
     const handleSchoolSelectionOpening = () => {
@@ -36,10 +41,11 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
     }
 
     return <>
-        <SchoolDrawer 
-            schools={schools} 
-            drawerOpen={drawerOpen} 
+        <SchoolDrawer
+            schools={schools}
+            drawerOpen={drawerOpen}
             handleSchoolSelect={handleSchoolSelect}
+            onSchoolAdded={handleSchoolAdded}
             onSchoolDeleted={handleSchoolDeleted}
             loadingSchools={loadingSchools}
         />
@@ -82,17 +88,9 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
                 }}>
                   {selectedSchool.name.charAt(0).toUpperCase()}
                 </Avatar>
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" color="primary">
-                    {selectedSchool.name}
-                  </Typography>
-                  <Chip 
-                    label="Активна шкільна команда" 
-                    size="small" 
-                    color="success" 
-                    variant="outlined"
-                  />
-                </Box>
+                <Typography variant="h6" fontWeight="bold" color="primary">
+                  {selectedSchool.name}
+                </Typography>
               </Box>
             )}
         </Box>

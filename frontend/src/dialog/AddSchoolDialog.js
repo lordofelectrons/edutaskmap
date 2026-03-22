@@ -10,11 +10,12 @@ export default function AddSchoolDialog({ open, onClose, onSchoolAdded }) {
     if (!schoolName.trim()) return;
     setLoading(true);
     try {
-      addSchool({ name: schoolName }, (data) => {
-        onSchoolAdded(data);
-        setSchoolName('');
-        onClose();
-      });
+      const data = await addSchool({ name: schoolName });
+      onSchoolAdded(data);
+      setSchoolName('');
+      onClose();
+    } catch (err) {
+      console.error('Error adding school:', err);
     } finally {
       setLoading(false);
     }

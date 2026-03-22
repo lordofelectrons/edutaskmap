@@ -53,10 +53,10 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
 
     setIsSubmitting(true)
     try {
-      addTask({ description, classId }, () => {
-        setDescription('')
-        onTaskAdded()
-      });
+      await addTask({ description, classId });
+      setDescription('')
+      setSurnameConfirmed(false)
+      onTaskAdded()
     } catch (err) {
       console.error('Failed to add task:', err)
     } finally {

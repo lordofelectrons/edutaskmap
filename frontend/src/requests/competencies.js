@@ -1,31 +1,31 @@
 import { API_BASE_URL } from '../config/api';
 
-export async function fetchCompetencies(cb) {
+export async function fetchCompetencies() {
   const res = await fetch(`${API_BASE_URL}/api/competencies`);
-  const data = await res.json();
-  cb(data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-export async function fetchCompetenciesBySchoolId(school_id, cb) {
+export async function fetchCompetenciesBySchoolId(school_id) {
   const res = await fetch(`${API_BASE_URL}/api/competencies${school_id ? `?school_id=${school_id}` : ''}`);
-  const data = await res.json();
-  cb(data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-export async function addCompetency({ name, school_id }, cb) {
+export async function addCompetency({ name, school_id }) {
   const res = await fetch(`${API_BASE_URL}/api/competencies`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, school_id }),
   });
-  const data = await res.json();
-  cb(data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-export async function deleteCompetency(id, cb) {
+export async function deleteCompetency(id) {
   const res = await fetch(`${API_BASE_URL}/api/competencies/${id}`, {
     method: 'DELETE',
   });
-  const data = await res.json();
-  cb(data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
