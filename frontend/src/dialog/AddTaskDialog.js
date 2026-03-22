@@ -42,6 +42,7 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
   const [surnameConfirmed, setSurnameConfirmed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [detectedUrl, setDetectedUrl] = useState(null)
+  const [checkboxHighlight, setCheckboxHighlight] = useState(false)
   const { t } = useThemeMode();
 
   useEffect(() => {
@@ -52,6 +53,12 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!description.trim()) return
+
+    if (detectedUrl && !surnameConfirmed) {
+      setCheckboxHighlight(true)
+      setTimeout(() => setCheckboxHighlight(false), 2000)
+      return
+    }
 
     setIsSubmitting(true)
     try {
@@ -158,20 +165,45 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
                 </Typography>
               </Paper>
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={surnameConfirmed}
-                    onChange={(e) => setSurnameConfirmed(e.target.checked)}
-                    sx={{
-                      color: `${t.accentSuccess}60`,
-                      '&.Mui-checked': { color: t.accentSuccess },
-                    }}
-                  />
-                }
-                label="Я додав(ла) своє прізвище до документа"
-                sx={{ mt: 1.5, '& .MuiFormControlLabel-label': { color: t.textSecondary } }}
-              />
+              <Box sx={{
+                mt: 1.5,
+                p: 1,
+                borderRadius: 2,
+                border: checkboxHighlight ? `1px solid ${t.accentDanger}` : '1px solid transparent',
+                backgroundColor: checkboxHighlight ? `${t.accentDanger}10` : 'transparent',
+                transition: 'all 0.3s ease',
+                animation: checkboxHighlight ? 'shake 0.4s ease' : 'none',
+                '@keyframes shake': {
+                  '0%, 100%': { transform: 'translateX(0)' },
+                  '20%': { transform: 'translateX(-4px)' },
+                  '40%': { transform: 'translateX(4px)' },
+                  '60%': { transform: 'translateX(-3px)' },
+                  '80%': { transform: 'translateX(3px)' },
+                },
+              }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={surnameConfirmed}
+                      onChange={(e) => {
+                        setSurnameConfirmed(e.target.checked);
+                        if (e.target.checked) setCheckboxHighlight(false);
+                      }}
+                      sx={{
+                        color: checkboxHighlight ? t.accentDanger : `${t.accentSuccess}60`,
+                        '&.Mui-checked': { color: t.accentSuccess },
+                      }}
+                    />
+                  }
+                  label="Я додав(ла) своє прізвище до документа"
+                  sx={{ '& .MuiFormControlLabel-label': { color: checkboxHighlight ? t.accentDanger : t.textSecondary } }}
+                />
+                {checkboxHighlight && (
+                  <Typography variant="caption" sx={{ color: t.accentDanger, pl: 4, display: 'block' }}>
+                    Будь ласка, підтвердіть, що ви додали прізвище до документа
+                  </Typography>
+                )}
+              </Box>
             </Box>
           )}
         </DialogContent>
@@ -190,7 +222,7 @@ const AddTaskDialog = ({ classId, onTaskAdded }) => {
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || !description.trim() || (detectedUrl && !surnameConfirmed)}
+            disabled={isSubmitting || !description.trim()}
             variant="contained"
             startIcon={isSubmitting ? <CircularProgress size={16} /> : null}
             sx={{
