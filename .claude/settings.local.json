@@ -4,7 +4,8 @@
       "Bash(where node:*)",
       "Bash(where npm:*)",
       "Bash(cmd.exe /c \"where node\")",
-      "Bash(cmd.exe /c \"where npm\")"
+      "Bash(cmd.exe /c \"where npm\")",
+      "Bash(grep -r \"palette\\\\|colors\\\\|theme\" frontend/src --include=*.js --include=*.jsx -l)"
     ]
   }
 }

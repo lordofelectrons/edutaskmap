@@ -3,10 +3,12 @@ import { Card, Box, CardContent, Typography, IconButton, Tooltip, CircularProgre
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import { deleteCompetency } from '../requests/competencies';
 import ConfirmDialog from '../dialog/ConfirmDialog';
+import { useThemeMode } from '../theme/ThemeContext';
 
 export default function CompetencyCard({ competency, onCompetencyDeleted }) {
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const { t } = useThemeMode();
 
   const handleDelete = async () => {
     setConfirmOpen(false);
@@ -26,13 +28,15 @@ export default function CompetencyCard({ competency, onCompetencyDeleted }) {
       <Card sx={{
         height: '100%',
         borderRadius: 3,
-        boxShadow: 3,
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        background: t.bgSurfaceSolid,
+        border: `1px solid ${competency.color || t.accentPrimary}25`,
+        transition: 'all 0.3s ease',
         '&:hover': {
           transform: 'translateY(-8px)',
-          boxShadow: 8,
+          boxShadow: `0 8px 30px ${competency.color || t.accentPrimary}20`,
+          border: `1px solid ${competency.color || t.accentPrimary}50`,
           '& .competency-header': {
-            background: `${competency.color}dd`,
+            boxShadow: `inset 0 -2px 15px ${competency.color || t.accentPrimary}15`,
           },
           '& .delete-btn': {
             opacity: 1
@@ -42,7 +46,7 @@ export default function CompetencyCard({ competency, onCompetencyDeleted }) {
         <Box
           className="competency-header"
           sx={{
-            background: competency.color || '#ef4444',
+            background: `linear-gradient(135deg, ${competency.color || t.accentPrimary}cc, ${competency.color || t.accentPrimary}88)`,
             color: '#fff',
             px: 3,
             py: 2,
@@ -52,10 +56,11 @@ export default function CompetencyCard({ competency, onCompetencyDeleted }) {
             borderTopRightRadius: 12,
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            transition: 'all 0.3s ease',
           }}
         >
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.03em' }}>
             Компетентність
           </Typography>
           <Tooltip title="Видалити компетентність">
@@ -90,7 +95,7 @@ export default function CompetencyCard({ competency, onCompetencyDeleted }) {
               fontSize: '1.1rem',
               fontWeight: 500,
               lineHeight: 1.4,
-              color: '#374151'
+              color: t.textSecondary
             }}
           >
             {competency.name}

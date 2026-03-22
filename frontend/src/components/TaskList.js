@@ -17,10 +17,12 @@ import { Delete as DeleteIcon, Link as LinkIcon } from '@mui/icons-material'
 import { deleteTask } from '../requests/tasks'
 import AddTaskDialog from '../dialog/AddTaskDialog';
 import ConfirmDialog from '../dialog/ConfirmDialog';
+import { useThemeMode } from '../theme/ThemeContext';
 
 const TaskCard = ({ task, onDelete, isDeleting }) => {
   const hasMetadata = task.url && task.metadata_fetched;
   const hasImage = hasMetadata && task.image_url;
+  const { t } = useThemeMode();
 
   const handleLinkClick = () => {
     if (task.url) {
@@ -34,10 +36,13 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
         sx={{
           mb: 1,
           cursor: task.url ? 'pointer' : 'default',
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          background: t.bgCardInner,
+          border: `1px solid ${t.borderSubtle}`,
+          transition: 'all 0.2s ease',
           '&:hover': task.url ? {
-            boxShadow: 3,
+            boxShadow: t.shadowCard,
             transform: 'translateY(-1px)',
+            border: `1px solid ${t.borderMedium}`,
             '& .delete-btn': { opacity: 1 }
           } : {
             '& .delete-btn': { opacity: 1 }
@@ -54,7 +59,8 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                   width: 80,
                   height: 80,
                   borderRadius: 1,
-                  objectFit: 'cover'
+                  objectFit: 'cover',
+                  border: `1px solid ${t.borderSubtle}`,
                 }}
                 image={task.image_url}
                 alt={task.title || 'Link preview'}
@@ -71,7 +77,7 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                     sx={{
                       fontSize: '0.95rem',
                       fontWeight: 600,
-                      color: '#1f2937',
+                      color: t.textPrimary,
                       mb: 0.5,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -85,9 +91,9 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                   {task.title && task.description !== task.title && (
                     <Typography
                       variant="body2"
-                      color="text.secondary"
                       sx={{
                         fontSize: '0.85rem',
+                        color: t.textDim,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         display: '-webkit-box',
@@ -107,11 +113,13 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                         sx={{
                           fontSize: '0.75rem',
                           height: 20,
+                          borderColor: t.chipBorder,
+                          color: t.textMuted,
                           '& .MuiChip-label': { px: 1 }
                         }}
                       />
                     )}
-                    <LinkIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <LinkIcon sx={{ fontSize: 16, color: t.linkColor }} />
                   </Box>
                 </Box>
                 <Tooltip title="Видалити завдання">
@@ -126,10 +134,10 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
                     sx={{
                       opacity: 0,
                       transition: 'opacity 0.2s ease',
-                      color: 'error.main',
+                      color: t.accentDanger,
                       '&:hover': {
-                        backgroundColor: 'error.light',
-                        color: 'white'
+                        backgroundColor: `${t.accentDanger}20`,
+                        color: t.accentDangerHover
                       }
                     }}
                   >
@@ -150,15 +158,19 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
 
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
         p: 2,
         mb: 1,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        background: t.bgCardInner,
+        border: `1px solid ${t.borderSubtle}`,
+        transition: 'all 0.2s ease',
         '&:hover': {
-          backgroundColor: '#f9fafb',
+          backgroundColor: t.bgHover,
+          border: `1px solid ${t.borderMedium}`,
           '& .delete-btn': { opacity: 1 }
         }
       }}
@@ -169,7 +181,7 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
           '& .MuiListItemText-primary': {
             fontSize: '0.9rem',
             fontWeight: 500,
-            color: '#374151'
+            color: t.textSecondary
           }
         }}
       />
@@ -182,10 +194,10 @@ const TaskCard = ({ task, onDelete, isDeleting }) => {
           sx={{
             opacity: 0,
             transition: 'opacity 0.2s ease',
-            color: 'error.main',
+            color: t.accentDanger,
             '&:hover': {
-              backgroundColor: 'error.light',
-              color: 'white'
+              backgroundColor: `${t.accentDanger}20`,
+              color: t.accentDangerHover
             }
           }}
         >
@@ -205,6 +217,7 @@ const TaskList = ({ classId, preloadedTasks = [], onDataChange }) => {
   const [showAddForm, setShowAddForm] = useState(false)
   const [deletingTaskId, setDeletingTaskId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const { t } = useThemeMode();
 
   const handleTaskAdded = () => {
     if (onDataChange) onDataChange();
@@ -228,22 +241,24 @@ const TaskList = ({ classId, preloadedTasks = [], onDataChange }) => {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="subtitle2" fontWeight="bold" color="primary">
+        <Typography variant="subtitle2" fontWeight="bold" sx={{ color: t.accentPrimary, letterSpacing: '0.05em' }}>
           Завдання
         </Typography>
         <Chip
           label={`${tasks.length} завдань`}
           size="small"
-          color="primary"
           variant="outlined"
+          sx={{
+            borderColor: t.chipBorder,
+            color: t.accentPrimary,
+          }}
         />
       </Box>
 
       {tasks.length === 0 ? (
         <Typography
           variant="body2"
-          color="text.secondary"
-          sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}
+          sx={{ textAlign: 'center', py: 2, fontStyle: 'italic', color: t.textDimmer }}
         >
           Поки що немає завдань
         </Typography>
@@ -268,7 +283,12 @@ const TaskList = ({ classId, preloadedTasks = [], onDataChange }) => {
               variant="outlined"
               size="small"
               onClick={() => setShowAddForm(false)}
-              sx={{ width: '100%' }}
+              sx={{
+                width: '100%',
+                borderColor: t.borderMedium,
+                color: t.textMuted,
+                '&:hover': { borderColor: t.accentPrimary, color: t.accentPrimary },
+              }}
             >
               Скасувати
             </Button>
@@ -278,7 +298,12 @@ const TaskList = ({ classId, preloadedTasks = [], onDataChange }) => {
             variant="outlined"
             size="small"
             onClick={() => setShowAddForm(true)}
-            sx={{ width: '100%' }}
+            sx={{
+              width: '100%',
+              borderColor: t.borderMedium,
+              color: t.textMuted,
+              '&:hover': { borderColor: t.accentPrimary, color: t.accentPrimary },
+            }}
           >
             Додати завдання
           </Button>

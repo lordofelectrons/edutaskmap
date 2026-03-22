@@ -18,11 +18,13 @@ import { Delete as DeleteIcon } from '@mui/icons-material'
 import AddSchoolDialog from '../dialog/AddSchoolDialog.js';
 import { deleteSchool } from '../requests/schools.js';
 import ConfirmDialog from '../dialog/ConfirmDialog';
+import { useThemeMode } from '../theme/ThemeContext';
 
 export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect, onSchoolAdded, onSchoolDeleted, loadingSchools = false }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletingSchoolId, setDeletingSchoolId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const { t } = useThemeMode();
 
   const handleSchoolAddition = (school) => {
     if (onSchoolAdded) onSchoolAdded(school);
@@ -56,29 +58,32 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+          background: t.bgDrawer,
+          borderRight: `1px solid ${t.borderSubtle}`,
         }
       }}
     >
       <Box sx={{ p: 3, color: 'white', flexShrink: 0 }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 1, letterSpacing: '0.05em', textShadow: t.titleGlow }}>
           Шкільні команди
         </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.8 }}>
+        <Typography variant="body2" sx={{ color: t.textDim }}>
           Оберіть шкільну команду для роботи
         </Typography>
+        <Box sx={{ width: 40, height: 2, background: t.accentGradient, mt: 1.5, borderRadius: 1 }} />
       </Box>
 
       <Box sx={{
-        background: 'rgba(255, 255, 255, 0.95)',
+        background: t.bgInput,
         flex: 1,
         minHeight: 0,
         overflow: 'auto',
-        borderRadius: '20px 0 0 0'
+        borderRadius: '20px 0 0 0',
+        borderTop: `1px solid ${t.divider}`,
       }}>
         {loadingSchools ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
-            <CircularProgress />
+            <CircularProgress sx={{ color: t.accentPrimary }} />
           </Box>
         ) : (
           <>
@@ -91,18 +96,21 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
                     borderRadius: 2,
                     mx: 1,
                     mb: 1,
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                      backgroundColor: t.bgHover,
                       transform: 'translateX(4px)',
                       '& .delete-btn': { opacity: 1 }
                     }
                   }}
                 >
                   <Avatar sx={{
-                    bgcolor: 'primary.main',
+                    background: t.btnGradient,
                     width: 32,
                     height: 32,
-                    mr: 2
+                    mr: 2,
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
                   }}>
                     {school?.name.charAt(0).toUpperCase()}
                   </Avatar>
@@ -111,7 +119,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
                     sx={{
                       '& .MuiListItemText-primary': {
                         fontWeight: 500,
-                        color: '#1f2937'
+                        color: t.textSecondary
                       }
                     }}
                   />
@@ -124,10 +132,10 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
                       sx={{
                         opacity: 0,
                         transition: 'opacity 0.2s ease',
-                        color: 'error.main',
+                        color: t.accentDanger,
                         '&:hover': {
-                          backgroundColor: 'error.light',
-                          color: 'white'
+                          backgroundColor: `${t.accentDanger}20`,
+                          color: t.accentDangerHover
                         }
                       }}
                     >
@@ -143,7 +151,7 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
             ))}
           </List>
 
-          <Divider sx={{ mx: 3, my: 2 }} />
+          <Divider sx={{ mx: 3, my: 2, borderColor: t.divider }} />
 
           <Box sx={{ p: 3 }}>
             <Button
@@ -151,11 +159,15 @@ export default function SchoolDrawer ({ schools, drawerOpen, handleSchoolSelect,
               fullWidth
               onClick={() => setDialogOpen(true)}
               sx={{
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                background: t.btnGradient,
                 borderRadius: 2,
                 py: 1.5,
+                fontWeight: 600,
+                letterSpacing: '0.03em',
+                boxShadow: t.shadowGlow,
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #5a67d8, #6b46c1)'
+                  background: t.btnGradientHover,
+                  boxShadow: t.shadowGlowHover,
                 }
               }}
             >

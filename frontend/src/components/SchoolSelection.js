@@ -7,9 +7,11 @@ import {
 } from '@mui/material';
 import SchoolDrawer from './SchoolDrawer';
 import { clearSavedSchoolId } from '../utils/schoolStorage.js';
+import { useThemeMode } from '../theme/ThemeContext';
 
 export default function SchoolSelection ({ schools, selectedSchool, setSelectedSchool, syncSchoolList, loadingSchools = false }) {
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const { t } = useThemeMode();
 
     const handleSchoolSelect = (school) => {
         if (school) {
@@ -25,7 +27,6 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
     };
 
     const handleSchoolSelectionOpening = () => {
-        // Only fetch if schools haven't been loaded yet
         if (schools.length === 0) {
             syncSchoolList();
         }
@@ -49,46 +50,50 @@ export default function SchoolSelection ({ schools, selectedSchool, setSelectedS
             onSchoolDeleted={handleSchoolDeleted}
             loadingSchools={loadingSchools}
         />
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 4,
           flexWrap: 'wrap',
           gap: 2
         }}>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={handleSchoolSelectionOpening}
-              sx={{ 
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+              sx={{
+                background: t.btnGradient,
                 color: 'white',
-                fontWeight: 'bold',
+                fontWeight: '700',
                 fontSize: '1.1rem',
                 px: 4,
                 py: 1.5,
                 borderRadius: 2,
-                boxShadow: 3,
+                letterSpacing: '0.04em',
+                boxShadow: t.shadowGlow,
+                transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #5a67d8, #6b46c1)',
+                  background: t.btnGradientHover,
                   transform: 'translateY(-2px)',
-                  boxShadow: 6
+                  boxShadow: t.shadowGlowHover,
                 }
               }}
             >
               Шкільна команда
             </Button>
-            
+
             {selectedSchool && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ 
-                  bgcolor: 'primary.main',
+                <Avatar sx={{
+                  background: t.btnGradient,
                   width: 40,
-                  height: 40
+                  height: 40,
+                  fontWeight: 700,
+                  boxShadow: t.shadowGlow,
                 }}>
                   {selectedSchool.name.charAt(0).toUpperCase()}
                 </Avatar>
-                <Typography variant="h6" fontWeight="bold" color="primary">
+                <Typography variant="h6" fontWeight="bold" sx={{ color: t.textPrimary }}>
                   {selectedSchool.name}
                 </Typography>
               </Box>

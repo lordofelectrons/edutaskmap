@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import EduTaskMap from './EduTaskMap';
+import { ThemeProvider } from './theme/ThemeContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <EduTaskMap />
+    <ThemeProvider>
+      <EduTaskMap />
+    </ThemeProvider>
   </React.StrictMode>
 );
 

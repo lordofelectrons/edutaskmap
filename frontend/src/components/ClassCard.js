@@ -4,10 +4,12 @@ import { Delete as DeleteIcon } from '@mui/icons-material';
 import TaskList from './TaskList';
 import { deleteClass } from '../requests/classes';
 import ConfirmDialog from '../dialog/ConfirmDialog';
+import { useThemeMode } from '../theme/ThemeContext';
 
 export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = [], onDataChange }) {
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const { t } = useThemeMode();
 
   const handleDelete = async () => {
     setConfirmOpen(false);
@@ -27,28 +29,30 @@ export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = 
     <>
       <Card sx={{
         borderRadius: 2,
-        boxShadow: 2,
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        background: t.bgCard,
+        border: `1px solid ${t.borderSubtle}`,
+        transition: 'all 0.2s ease',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         '&:hover': {
-          boxShadow: 4,
+          boxShadow: t.shadowCard,
           transform: 'translateY(-2px)',
+          border: `1px solid ${t.borderMedium}`,
           '& .delete-btn': { opacity: 1 }
         }
       }}>
         <Box sx={{
-          background: '#f3f4f6',
-          borderLeft: `4px solid ${classItem.gradeColor || '#fbbf24'}`,
-          color: '#374151',
+          background: t.bgHeaderSubtle,
+          borderLeft: `4px solid ${classItem.gradeColor || t.accentPrimary}`,
+          color: t.textMuted,
           px: 3,
           py: 1.5,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <Typography variant="subtitle2" fontWeight="bold">
+          <Typography variant="subtitle2" fontWeight="bold" sx={{ letterSpacing: '0.08em', fontSize: '0.7rem' }}>
             ПРЕДМЕТ
           </Typography>
           <Tooltip title="Видалити предмет">
@@ -60,10 +64,10 @@ export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = 
               sx={{
                 opacity: 0,
                 transition: 'opacity 0.2s ease',
-                color: 'error.main',
+                color: t.accentDanger,
                 '&:hover': {
-                  backgroundColor: 'error.light',
-                  color: 'white'
+                  backgroundColor: `${t.accentDanger}20`,
+                  color: t.accentDangerHover
                 }
               }}
             >
@@ -85,7 +89,7 @@ export default function ClassCard({ classItem, onClassDeleted, preloadedTasks = 
             fontWeight="bold"
             sx={{
               mb: 2,
-              color: '#1f2937',
+              color: t.textPrimary,
               fontSize: '1.1rem'
             }}
           >
