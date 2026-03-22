@@ -199,7 +199,7 @@ export function ThemeProvider({ children }) {
     }
   }), [mode, t]);
 
-  const value = useMemo(() => ({ mode, toggleTheme, t }), [mode, t]);
+  const value = useMemo(() => ({ mode, toggleTheme, t }), [mode, toggleTheme, t]);
 
   return (
     <ThemeContext.Provider value={value}>
